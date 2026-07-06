@@ -72,7 +72,7 @@
 <script>
     const COLLES = [{
         id: "ue16_ed1",
-        titre: "UE16 - ED1",
+        titre: "🦩UE16 - ED1",
         description: "16 questions",
         pdf: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
         qcm: [
@@ -105,7 +105,7 @@
         COLLES.forEach(colle => {
             html += `<div class="colle-item">
                 <div class="info">
-                    <h3>📘 ${colle.titre}</h3>
+                    <h3>${colle.titre}</h3>
                     <div class="desc">${colle.description}</div>
                     <div style="margin-top:5px;"><span class="badge badge-qcm">${colle.qcm.length} questions</span></div>
                 </div>
