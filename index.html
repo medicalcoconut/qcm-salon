@@ -17,8 +17,6 @@
         .btn-danger:hover { background: #bd2130; }
         .btn-secondary { background: #6c757d; color: white; }
         .btn-secondary:hover { background: #5a6268; }
-        .btn-warning { background: #ffc107; color: black; }
-        .btn-warning:hover { background: #e0a800; }
         .btn-pdf { background: #dc3545; color: white; }
         .btn-pdf:hover { background: #b02a37; }
         .btn-qcm { background: #28a745; color: white; }
@@ -43,6 +41,37 @@
         .colle-item .info .desc { color: #6c757d; font-size: 14px; }
         .colle-item .actions { display: flex; gap: 10px; flex-wrap: wrap; }
 
+        /* Popup */
+        .popup-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .popup-overlay.active { display: flex; }
+        .popup {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        .popup h2 { margin-top: 0; }
+        .popup select {
+            padding: 12px;
+            font-size: 18px;
+            border-radius: 8px;
+            border: 2px solid #ced4da;
+            width: 100%;
+            margin: 15px 0;
+        }
+        .popup .btn-container { display: flex; gap: 10px; justify-content: center; }
+
         .chrono { font-size: 48px; font-weight: bold; text-align: center; padding: 15px; background: #1a1a2e; color: #00ff88; border-radius: 12px; margin: 15px 0; font-family: monospace; }
         .chrono.alerte { color: #ff4444; animation: blink 1s infinite; }
         @keyframes blink { 50% { opacity: 0.3; } }
@@ -59,15 +88,12 @@
         .recap { margin-top: 20px; padding: 20px; border-radius: 12px; background: #e3f2fd; border: 2px solid #007bff; text-align: center; }
         .recap .note { font-size: 48px; font-weight: bold; color: #007bff; }
         .lettres { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
-        .btn-container { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
         .header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 20px; }
-
         .filtre { margin: 15px 0; }
-        .filtre select { padding: 10px; font-size: 16px; border-radius: 8px; border: 2px solid #ced4da; width: 100%; max-width: 300px; }
-
-        .detail-points { font-size: 14px; color: #6c757d; margin-top: 5px; }
+        .filtre input { padding: 10px; font-size: 16px; border-radius: 8px; border: 2px solid #ced4da; width: 100%; max-width: 300px; }
         .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; }
         .badge-qcm { background: #e3f2fd; color: #007bff; }
+        .detail-points { font-size: 14px; color: #6c757d; margin-top: 5px; }
 
         @media (max-width: 600px) {
             .colle-item { flex-direction: column; text-align: center; }
@@ -83,10 +109,9 @@
             <h1 style="text-align:center;">📚 Portail Colle</h1>
             <p style="text-align:center; color:#6c757d;">Choisis ta colle, télécharge le PDF et fais le QCM</p>
 
-            <!-- Filtre / recherche -->
             <div class="filtre">
                 <label style="font-weight:bold;">🔍 Rechercher une colle :</label>
-                <input type="text" id="filtreInput" placeholder="Ex: UE16, ED1..." oninput="filtrerColles()" style="width:100%; max-width:300px; padding:10px; border:2px solid #ced4da; border-radius:8px; font-size:16px;">
+                <input type="text" id="filtreInput" placeholder="Ex: UE16, ED1..." oninput="filtrerColles()">
             </div>
 
             <div id="listeColles"></div>
@@ -99,7 +124,6 @@
                 <button class="btn btn-secondary" onclick="quitterQCM()">✖ Quitter</button>
             </div>
 
-            <!-- Chrono -->
             <div id="chronoContainer">
                 <div class="chrono" id="chronoDisplay">⏱️ --:--</div>
                 <div id="chronoStatus" style="text-align:center; font-size:14px; color:#6c757d;"></div>
@@ -119,6 +143,23 @@
             <div id="resultatsContainer"></div>
         </div>
 
+        <!-- ============ POPUP CHOIX DURÉE ============ -->
+        <div class="popup-overlay" id="popupDuree">
+            <div class="popup">
+                <h2>⏱️ Choisis la durée</h2>
+                <select id="dureeSelect">
+                    <option value="30">30 minutes</option>
+                    <option value="40">40 minutes</option>
+                    <option value="60">60 minutes (tiers temps)</option>
+                    <option value="0">⏩ Sans chrono</option>
+                </select>
+                <div class="btn-container">
+                    <button class="btn btn-secondary" onclick="fermerPopup()">Annuler</button>
+                    <button class="btn btn-success" onclick="confirmerDuree()">✅ Lancer</button>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -130,15 +171,14 @@
                 id: "ue16_ed1",
                 titre: "UE16 - ED1",
                 description: "Colle n°1 - UE16",
-                pdf: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf", // ← METS TON LIEN PDF ICI
+                pdf: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
                 qcm: [
                     { id: "QCM 1", reponse: "A" },
                     { id: "QCM 2", reponse: "B" },
                     { id: "QCM 3", reponse: "C" },
                     { id: "QCM 4", reponse: "A" },
                     { id: "QCM 5", reponse: "B" }
-                ],
-                duree: 30 // en minutes
+                ]
             },
             {
                 id: "ue16_ed2",
@@ -151,8 +191,7 @@
                     { id: "QCM 3", reponse: "B" },
                     { id: "QCM 4", reponse: "C" },
                     { id: "QCM 5", reponse: "B" }
-                ],
-                duree: 30
+                ]
             },
             {
                 id: "ue22_ed1",
@@ -165,22 +204,7 @@
                     { id: "QCM 3", reponse: "A" },
                     { id: "QCM 4", reponse: "C" },
                     { id: "QCM 5", reponse: "B" }
-                ],
-                duree: 40
-            },
-            {
-                id: "ue22_ed2",
-                titre: "UE22 - ED2",
-                description: "Colle n°2 - UE22 - Tiers temps",
-                pdf: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-                qcm: [
-                    { id: "QCM 1", reponse: "B" },
-                    { id: "QCM 2", reponse: "C" },
-                    { id: "QCM 3", reponse: "D" },
-                    { id: "QCM 4", reponse: "A" },
-                    { id: "QCM 5", reponse: "E" }
-                ],
-                duree: 60 // tiers temps
+                ]
             }
         ];
 
@@ -192,7 +216,7 @@
         let tempsRestant = 0;
         let tempsTotal = 0;
         let qcmValide = false;
-        let chronoFini = false;
+        let colleIdEnAttente = null;
 
         // ==================== AFFICHER LES COLLES ====================
         function afficherColles(filtre = "") {
@@ -219,12 +243,11 @@
                             <div class="desc">${colle.description}</div>
                             <div style="margin-top:5px;">
                                 <span class="badge badge-qcm">${colle.qcm.length} questions</span>
-                                <span class="badge badge-qcm">${colle.duree} min</span>
                             </div>
                         </div>
                         <div class="actions">
                             <button class="btn btn-pdf" onclick="telechargerPDF('${colle.id}')">📄 PDF</button>
-                            <button class="btn btn-qcm" onclick="lancerQCM('${colle.id}')">🎯 QCM</button>
+                            <button class="btn btn-qcm" onclick="ouvrirPopupDuree('${colle.id}')">🎯 QCM</button>
                         </div>
                     </div>
                 `;
@@ -242,12 +265,31 @@
         function telechargerPDF(id) {
             const colle = COLLES.find(c => c.id === id);
             if (!colle) return;
-            // Ouvre le PDF dans un nouvel onglet (ou télécharge)
             window.open(colle.pdf, '_blank');
         }
 
+        // ==================== POPUP DURÉE ====================
+        function ouvrirPopupDuree(id) {
+            colleIdEnAttente = id;
+            document.getElementById("popupDuree").classList.add("active");
+        }
+
+        function fermerPopup() {
+            document.getElementById("popupDuree").classList.remove("active");
+            colleIdEnAttente = null;
+        }
+
+        function confirmerDuree() {
+            const duree = parseInt(document.getElementById("dureeSelect").value);
+            fermerPopup();
+            if (colleIdEnAttente) {
+                lancerQCM(colleIdEnAttente, duree);
+                colleIdEnAttente = null;
+            }
+        }
+
         // ==================== LANCER QCM ====================
-        function lancerQCM(id) {
+        function lancerQCM(id, dureeChoisie) {
             const colle = COLLES.find(c => c.id === id);
             if (!colle) {
                 alert("❌ Colle introuvable !");
@@ -259,30 +301,23 @@
                 return;
             }
 
-            // Initialisation
             colleActuelle = colle;
             questionsActuelles = colle.qcm;
             reponsesEleve = {};
             qcmValide = false;
-            chronoFini = false;
 
-            // Chrono
-            tempsTotal = colle.duree * 60;
+            // Chrono avec la durée choisie
+            tempsTotal = dureeChoisie * 60;
             tempsRestant = tempsTotal;
 
-            // Afficher l'écran QCM
             document.getElementById("ecranAccueil").classList.add("hidden");
             document.getElementById("ecranQCM").classList.remove("hidden");
             document.getElementById("ecranResultats").classList.add("hidden");
             document.getElementById("titreQCM").textContent = `📝 ${colle.titre}`;
 
-            // Générer les questions
             genererQuestions();
-
-            // Démarrer le chrono
             demarrerChrono();
 
-            // Réactiver le bouton valider
             document.getElementById("btnValider").disabled = false;
             document.getElementById("btnValider").textContent = "✅ Valider";
         }
@@ -349,7 +384,6 @@
 
                 if (tempsRestant <= 0) {
                     clearInterval(chronoInterval);
-                    chronoFini = true;
                     display.classList.add("alerte");
                     status.textContent = "⏰ Temps écoulé ! Validation automatique...";
                     document.getElementById("btnValider").disabled = true;
@@ -434,7 +468,6 @@
                 });
             });
 
-            // Règle : 2 fautes = 0
             let nbFautes = details.filter(d => d.statut === "mauvaise" && d.eleve !== "Non coché").length;
             if (nbFautes >= 2) {
                 details.forEach(d => {
@@ -465,7 +498,7 @@
                 <h3 style="margin-top:20px;">📋 Détail par QCM</h3>
             `;
 
-            details.forEach((d, index) => {
+            details.forEach((d) => {
                 const estJuste = d.statut === "bonne";
                 const icone = estJuste ? "✅" : "❌";
                 const couleur = estJuste ? "bonne" : "mauvaise";
