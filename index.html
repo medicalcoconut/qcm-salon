@@ -2,46 +2,24 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Portail Colle - QCM</title>
+    <title>UE16 - ED1</title>
     <style>
         * { box-sizing: border-box; }
-        body { font-family: Arial; padding: 20px; max-width: 900px; margin: auto; background: #f0f2f5; }
+        body { font-family: Arial; padding: 20px; max-width: 850px; margin: auto; background: #f0f2f5; }
         .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .hidden { display: none !important; }
         .btn { padding: 12px 30px; font-size: 18px; border: none; border-radius: 8px; cursor: pointer; margin: 5px; }
-        .btn-primary { background: #007bff; color: white; }
-        .btn-primary:hover { background: #0056b3; }
         .btn-success { background: #28a745; color: white; }
         .btn-success:hover { background: #1e7e34; }
-        .btn-danger { background: #dc3545; color: white; }
-        .btn-danger:hover { background: #bd2130; }
         .btn-secondary { background: #6c757d; color: white; }
         .btn-secondary:hover { background: #5a6268; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-danger:hover { background: #bd2130; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-primary:hover { background: #0056b3; }
         .btn-pdf { background: #dc3545; color: white; }
         .btn-pdf:hover { background: #b02a37; }
-        .btn-qcm { background: #28a745; color: white; }
-        .btn-qcm:hover { background: #1e7e34; }
 
-        .colle-item {
-            background: #f8f9fa;
-            padding: 20px;
-            margin: 15px 0;
-            border-radius: 12px;
-            border-left: 5px solid #007bff;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-            transition: 0.2s;
-        }
-        .colle-item:hover { background: #e9ecef; }
-        .colle-item .info { flex: 1; min-width: 200px; }
-        .colle-item .info h3 { margin: 0 0 5px 0; color: #007bff; }
-        .colle-item .info .desc { color: #6c757d; font-size: 14px; }
-        .colle-item .actions { display: flex; gap: 10px; flex-wrap: wrap; }
-
-        /* Popup */
         .popup-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -89,8 +67,22 @@
         .recap .note { font-size: 48px; font-weight: bold; color: #007bff; }
         .lettres { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
         .header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 20px; }
-        .filtre { margin: 15px 0; }
-        .filtre input { padding: 10px; font-size: 16px; border-radius: 8px; border: 2px solid #ced4da; width: 100%; max-width: 300px; }
+        .colle-item {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 12px;
+            border-left: 5px solid #007bff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .colle-item .info { flex: 1; min-width: 200px; }
+        .colle-item .info h3 { margin: 0 0 5px 0; color: #007bff; }
+        .colle-item .info .desc { color: #6c757d; font-size: 14px; }
+        .colle-item .actions { display: flex; gap: 10px; flex-wrap: wrap; }
         .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; }
         .badge-qcm { background: #e3f2fd; color: #007bff; }
         .detail-points { font-size: 14px; color: #6c757d; margin-top: 5px; }
@@ -106,21 +98,15 @@
 
         <!-- ============ ÉCRAN 1 : ACCUEIL ============ -->
         <div id="ecranAccueil">
-            <h1 style="text-align:center;">📚 Portail Colle</h1>
-            <p style="text-align:center; color:#6c757d;">Choisis ta colle, télécharge le PDF et fais le QCM</p>
-
-            <div class="filtre">
-                <label style="font-weight:bold;">🔍 Rechercher une colle :</label>
-                <input type="text" id="filtreInput" placeholder="Ex: UE16, ED1..." oninput="filtrerColles()">
-            </div>
-
+            <h1 style="text-align:center;">📚 UE16 - ED1</h1>
+            <p style="text-align:center; color:#6c757d;">Télécharge le PDF et fais le QCM</p>
             <div id="listeColles"></div>
         </div>
 
         <!-- ============ ÉCRAN 2 : QCM ============ -->
         <div id="ecranQCM" class="hidden">
             <div class="header">
-                <h2 id="titreQCM">📝 QCM</h2>
+                <h2 id="titreQCM">📝 UE16 - ED1</h2>
                 <button class="btn btn-secondary" onclick="quitterQCM()">✖ Quitter</button>
             </div>
 
@@ -164,46 +150,31 @@
 
     <script>
         // ================================================================
-        // 📦 BASE DE DONNÉES DES COLLES
+        // 📦 LA COLLE UE16 - ED1 AVEC 16 QUESTIONS
         // ================================================================
         const COLLES = [
             {
                 id: "ue16_ed1",
                 titre: "UE16 - ED1",
-                description: "Colle n°1 - UE16",
+                description: "16 questions - 5 réponses possibles chacune",
                 pdf: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
                 qcm: [
-                    { id: "QCM 1", reponse: "A" },
-                    { id: "QCM 2", reponse: "B" },
-                    { id: "QCM 3", reponse: "C" },
-                    { id: "QCM 4", reponse: "A" },
-                    { id: "QCM 5", reponse: "B" }
-                ]
-            },
-            {
-                id: "ue16_ed2",
-                titre: "UE16 - ED2",
-                description: "Colle n°2 - UE16",
-                pdf: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-                qcm: [
-                    { id: "QCM 1", reponse: "C" },
-                    { id: "QCM 2", reponse: "A" },
-                    { id: "QCM 3", reponse: "B" },
-                    { id: "QCM 4", reponse: "C" },
-                    { id: "QCM 5", reponse: "B" }
-                ]
-            },
-            {
-                id: "ue22_ed1",
-                titre: "UE22 - ED1",
-                description: "Colle n°1 - UE22",
-                pdf: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-                qcm: [
-                    { id: "QCM 1", reponse: "D" },
-                    { id: "QCM 2", reponse: "E" },
-                    { id: "QCM 3", reponse: "A" },
-                    { id: "QCM 4", reponse: "C" },
-                    { id: "QCM 5", reponse: "B" }
+                    { id: "QCM 1", reponse: ["A", "E"] },
+                    { id: "QCM 2", reponse: ["D", "E"] },
+                    { id: "QCM 3", reponse: ["B", "C", "D"] },
+                    { id: "QCM 4", reponse: ["A", "B", "E"] },
+                    { id: "QCM 5", reponse: ["A", "D"] },
+                    { id: "QCM 6", reponse: ["B", "D"] },
+                    { id: "QCM 7", reponse: ["A", "E"] },
+                    { id: "QCM 8", reponse: ["A"] },
+                    { id: "QCM 9", reponse: ["D", "E"] },
+                    { id: "QCM 10", reponse: ["C", "D"] },
+                    { id: "QCM 11", reponse: ["C"] },
+                    { id: "QCM 12", reponse: ["B", "C", "D"] },
+                    { id: "QCM 13", reponse: ["B", "D", "E"] },
+                    { id: "QCM 14", reponse: ["A", "E"] },
+                    { id: "QCM 15", reponse: ["B", "C", "D"] },
+                    { id: "QCM 16", reponse: ["A", "C", "D", "E"] }
                 ]
             }
         ];
@@ -218,24 +189,12 @@
         let qcmValide = false;
         let colleIdEnAttente = null;
 
-        // ==================== AFFICHER LES COLLES ====================
-        function afficherColles(filtre = "") {
+        // ==================== AFFICHER LA COLLE ====================
+        function afficherColles() {
             const container = document.getElementById("listeColles");
-            const filtreLower = filtre.toLowerCase();
-
-            const collesFiltrees = COLLES.filter(c =>
-                c.titre.toLowerCase().includes(filtreLower) ||
-                c.description.toLowerCase().includes(filtreLower) ||
-                c.id.toLowerCase().includes(filtreLower)
-            );
-
-            if (collesFiltrees.length === 0) {
-                container.innerHTML = `<p style="text-align:center; color:#6c757d;">❌ Aucune colle trouvée</p>`;
-                return;
-            }
 
             let html = "";
-            collesFiltrees.forEach(colle => {
+            COLLES.forEach(colle => {
                 html += `
                     <div class="colle-item">
                         <div class="info">
@@ -247,7 +206,7 @@
                         </div>
                         <div class="actions">
                             <button class="btn btn-pdf" onclick="telechargerPDF('${colle.id}')">📄 PDF</button>
-                            <button class="btn btn-qcm" onclick="ouvrirPopupDuree('${colle.id}')">🎯 QCM</button>
+                            <button class="btn btn-success" onclick="ouvrirPopupDuree('${colle.id}')">🎯 QCM</button>
                         </div>
                     </div>
                 `;
@@ -256,12 +215,6 @@
             container.innerHTML = html;
         }
 
-        function filtrerColles() {
-            const filtre = document.getElementById("filtreInput").value;
-            afficherColles(filtre);
-        }
-
-        // ==================== TÉLÉCHARGER PDF ====================
         function telechargerPDF(id) {
             const colle = COLLES.find(c => c.id === id);
             if (!colle) return;
@@ -296,17 +249,11 @@
                 return;
             }
 
-            if (!colle.qcm || colle.qcm.length === 0) {
-                alert("❌ Cette colle n'a pas de questions !");
-                return;
-            }
-
             colleActuelle = colle;
             questionsActuelles = colle.qcm;
             reponsesEleve = {};
             qcmValide = false;
 
-            // Chrono avec la durée choisie
             tempsTotal = dureeChoisie * 60;
             tempsRestant = tempsTotal;
 
@@ -349,19 +296,21 @@
         // ==================== COCHER UNE RÉPONSE ====================
         function cocherReponse(index, lettre) {
             const checkbox = document.getElementById(`q${index}_${lettre}`);
-            const div = document.getElementById(`q${index}`);
-            const labels = div.querySelectorAll("label");
-
+            
             if (checkbox.checked) {
-                labels.forEach(label => {
-                    const input = document.getElementById(label.htmlFor);
-                    if (input !== checkbox) {
-                        input.checked = false;
-                    }
-                });
-                reponsesEleve[index] = lettre;
+                if (!reponsesEleve[index]) {
+                    reponsesEleve[index] = [];
+                }
+                if (!reponsesEleve[index].includes(lettre)) {
+                    reponsesEleve[index].push(lettre);
+                }
             } else {
-                delete reponsesEleve[index];
+                if (reponsesEleve[index]) {
+                    reponsesEleve[index] = reponsesEleve[index].filter(l => l !== lettre);
+                    if (reponsesEleve[index].length === 0) {
+                        delete reponsesEleve[index];
+                    }
+                }
             }
         }
 
@@ -424,18 +373,29 @@
             let details = [];
 
             questionsActuelles.forEach((qcm, index) => {
-                const bonne = qcm.reponse;
-                const eleve = reponsesEleve[index] || "Non coché";
+                const bonnes = qcm.reponse;
+                const eleves = reponsesEleve[index] || [];
+                const eleveStr = eleves.length > 0 ? eleves.join(", ") : "Non coché";
 
                 let statut = "neutre";
                 let pointQCM = 0;
 
-                if (eleve === "Non coché") {
+                // Vérifier si toutes les bonnes réponses sont cochées et qu'il n'y a pas de mauvaises
+                const toutesBonnesCochees = bonnes.every(b => eleves.includes(b));
+                const aucuneMauvaise = eleves.every(e => bonnes.includes(e));
+
+                if (eleves.length === 0) {
                     statut = "mauvaise";
                     pointQCM = 0;
-                } else if (eleve === bonne) {
+                } else if (toutesBonnesCochees && aucuneMauvaise && eleves.length === bonnes.length) {
                     statut = "bonne";
                     pointQCM = 1;
+                } else if (toutesBonnesCochees && aucuneMauvaise && eleves.length < bonnes.length) {
+                    statut = "bonne";
+                    pointQCM = 0.5;
+                } else if (toutesBonnesCochees && !aucuneMauvaise) {
+                    statut = "bonne";
+                    pointQCM = 0.5;
                 } else {
                     statut = "mauvaise";
                     pointQCM = 0.5;
@@ -445,8 +405,8 @@
 
                 details.push({
                     id: qcm.id,
-                    bonne: bonne,
-                    eleve: eleve,
+                    bonnes: bonnes.join(", "),
+                    eleve: eleveStr,
                     statut: statut,
                     point: pointQCM
                 });
@@ -457,17 +417,22 @@
                 const labels = div.querySelectorAll("label");
                 labels.forEach(label => {
                     const input = document.getElementById(label.htmlFor);
-                    if (input.value === bonne) {
+                    if (bonnes.includes(input.value)) {
                         label.style.border = "3px solid #28a745";
                         label.style.background = "#d4edda";
                     }
-                    if (input.checked && input.value !== bonne) {
+                    if (input.checked && !bonnes.includes(input.value)) {
                         label.style.border = "3px solid #dc3545";
                         label.style.background = "#f8d7da";
+                    }
+                    if (input.checked && bonnes.includes(input.value)) {
+                        label.style.border = "3px solid #28a745";
+                        label.style.background = "#d4edda";
                     }
                 });
             });
 
+            // Règle : 2 fautes = 0
             let nbFautes = details.filter(d => d.statut === "mauvaise" && d.eleve !== "Non coché").length;
             if (nbFautes >= 2) {
                 details.forEach(d => {
@@ -507,7 +472,7 @@
                 html += `
                     <div class="resultat-item ${couleur}">
                         <span><strong>${d.id}</strong></span>
-                        <span>${icone} Toi : <strong>${d.eleve}</strong> | Bonne : <strong>${d.bonne}</strong></span>
+                        <span>${icone} Toi : <strong>${d.eleve}</strong> | Bonne(s) : <strong>${d.bonnes}</strong></span>
                         <span><strong>${pointAffiche}</strong></span>
                     </div>
                 `;
