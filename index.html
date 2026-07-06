@@ -101,7 +101,7 @@
     let reponsesEleve = {};
     let qcmValide = false;
     let chronoInterval = null;
-    let tempsRestant = 1800; // 30 min
+    let tempsRestant = 1800;
 
     function afficherColles() {
         const container = document.getElementById("listeColles");
@@ -134,7 +134,7 @@
         questionsActuelles = colle.qcm;
         reponsesEleve = {};
         qcmValide = false;
-        tempsRestant = 1800; // 30 min
+        tempsRestant = 1800;
 
         document.getElementById("ecranAccueil").classList.add("hidden");
         document.getElementById("ecranQCM").classList.remove("hidden");
