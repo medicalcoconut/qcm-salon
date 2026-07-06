@@ -13,46 +13,8 @@
         .btn-success:hover { background: #1e7e34; }
         .btn-secondary { background: #6c757d; color: white; }
         .btn-secondary:hover { background: #5a6268; }
-        .btn-danger { background: #dc3545; color: white; }
-        .btn-danger:hover { background: #bd2130; }
-        .btn-primary { background: #007bff; color: white; }
-        .btn-primary:hover { background: #0056b3; }
         .btn-pdf { background: #dc3545; color: white; }
         .btn-pdf:hover { background: #b02a37; }
-
-        .popup-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .popup-overlay.active { display: flex; }
-        .popup {
-            background: white;
-            padding: 30px;
-            border-radius: 16px;
-            max-width: 400px;
-            width: 90%;
-            text-align: center;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-        }
-        .popup h2 { margin-top: 0; }
-        .popup select {
-            padding: 12px;
-            font-size: 18px;
-            border-radius: 8px;
-            border: 2px solid #ced4da;
-            width: 100%;
-            margin: 15px 0;
-        }
-        .popup .btn-container { display: flex; gap: 10px; justify-content: center; }
-
-        .chrono { font-size: 48px; font-weight: bold; text-align: center; padding: 15px; background: #1a1a2e; color: #00ff88; border-radius: 12px; margin: 15px 0; font-family: monospace; }
-        .chrono.alerte { color: #ff4444; animation: blink 1s infinite; }
-        @keyframes blink { 50% { opacity: 0.3; } }
 
         .question { background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 4px solid #007bff; }
         .question label { display: inline-block; margin: 5px 8px 5px 0; cursor: pointer; padding: 10px 20px; border-radius: 8px; border: 2px solid #dee2e6; font-weight: bold; font-size: 18px; min-width: 50px; text-align: center; }
@@ -98,7 +60,7 @@
 
         <!-- ============ ÉCRAN 1 : ACCUEIL ============ -->
         <div id="ecranAccueil">
-            <h1 style="text-align:center;">📚 UE16 - ED1</h1>
+            <h1 style="text-align:center;">📚 Entraînement QCM</h1>
             <p style="text-align:center; color:#6c757d;">Télécharge le PDF et fais le QCM</p>
             <div id="listeColles"></div>
         </div>
@@ -106,13 +68,8 @@
         <!-- ============ ÉCRAN 2 : QCM ============ -->
         <div id="ecranQCM" class="hidden">
             <div class="header">
-                <h2 id="titreQCM">📝 UE16 - ED1</h2>
+                <h2>📝 UE16 - ED1</h2>
                 <button class="btn btn-secondary" onclick="quitterQCM()">✖ Quitter</button>
-            </div>
-
-            <div id="chronoContainer">
-                <div class="chrono" id="chronoDisplay">⏱️ --:--</div>
-                <div id="chronoStatus" style="text-align:center; font-size:14px; color:#6c757d;"></div>
             </div>
 
             <div id="questionsContainer"></div>
@@ -129,23 +86,6 @@
             <div id="resultatsContainer"></div>
         </div>
 
-        <!-- ============ POPUP CHOIX DURÉE ============ -->
-        <div class="popup-overlay" id="popupDuree">
-            <div class="popup">
-                <h2>⏱️ Choisis la durée</h2>
-                <select id="dureeSelect">
-                    <option value="30">30 minutes</option>
-                    <option value="40">40 minutes</option>
-                    <option value="60">60 minutes (tiers temps)</option>
-                    <option value="0">⏩ Sans chrono</option>
-                </select>
-                <div class="btn-container">
-                    <button class="btn btn-secondary" onclick="fermerPopup()">Annuler</button>
-                    <button class="btn btn-success" onclick="confirmerDuree()">✅ Lancer</button>
-                </div>
-            </div>
-        </div>
-
     </div>
 
     <script>
@@ -156,7 +96,7 @@
             {
                 id: "ue16_ed1",
                 titre: "UE16 - ED1",
-                description: "16 questions - 5 réponses possibles chacune",
+                description: "16 questions",
                 pdf: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
                 qcm: [
                     { id: "QCM 1", reponse: ["A", "E"] },
@@ -179,15 +119,9 @@
             }
         ];
 
-        // ==================== VARIABLES ====================
-        let colleActuelle = null;
         let questionsActuelles = [];
         let reponsesEleve = {};
-        let chronoInterval = null;
-        let tempsRestant = 0;
-        let tempsTotal = 0;
         let qcmValide = false;
-        let colleIdEnAttente = null;
 
         // ==================== AFFICHER LA COLLE ====================
         function afficherColles() {
@@ -206,7 +140,7 @@
                         </div>
                         <div class="actions">
                             <button class="btn btn-pdf" onclick="telechargerPDF('${colle.id}')">📄 PDF</button>
-                            <button class="btn btn-success" onclick="ouvrirPopupDuree('${colle.id}')">🎯 QCM</button>
+                            <button class="btn btn-success" onclick="lancerQCM('${colle.id}')">🎯 QCM</button>
                         </div>
                     </div>
                 `;
@@ -221,49 +155,23 @@
             window.open(colle.pdf, '_blank');
         }
 
-        // ==================== POPUP DURÉE ====================
-        function ouvrirPopupDuree(id) {
-            colleIdEnAttente = id;
-            document.getElementById("popupDuree").classList.add("active");
-        }
-
-        function fermerPopup() {
-            document.getElementById("popupDuree").classList.remove("active");
-            colleIdEnAttente = null;
-        }
-
-        function confirmerDuree() {
-            const duree = parseInt(document.getElementById("dureeSelect").value);
-            fermerPopup();
-            if (colleIdEnAttente) {
-                lancerQCM(colleIdEnAttente, duree);
-                colleIdEnAttente = null;
-            }
-        }
-
         // ==================== LANCER QCM ====================
-        function lancerQCM(id, dureeChoisie) {
+        function lancerQCM(id) {
             const colle = COLLES.find(c => c.id === id);
             if (!colle) {
                 alert("❌ Colle introuvable !");
                 return;
             }
 
-            colleActuelle = colle;
             questionsActuelles = colle.qcm;
             reponsesEleve = {};
             qcmValide = false;
 
-            tempsTotal = dureeChoisie * 60;
-            tempsRestant = tempsTotal;
-
             document.getElementById("ecranAccueil").classList.add("hidden");
             document.getElementById("ecranQCM").classList.remove("hidden");
             document.getElementById("ecranResultats").classList.add("hidden");
-            document.getElementById("titreQCM").textContent = `📝 ${colle.titre}`;
 
             genererQuestions();
-            demarrerChrono();
 
             document.getElementById("btnValider").disabled = false;
             document.getElementById("btnValider").textContent = "✅ Valider";
@@ -314,55 +222,9 @@
             }
         }
 
-        // ==================== CHRONOMÈTRE ====================
-        function demarrerChrono() {
-            const display = document.getElementById("chronoDisplay");
-            const status = document.getElementById("chronoStatus");
-
-            if (tempsTotal === 0) {
-                display.textContent = "⏩ Sans chrono";
-                status.textContent = "⏱️ Pas de limite de temps";
-                return;
-            }
-
-            afficherChrono();
-
-            chronoInterval = setInterval(() => {
-                tempsRestant--;
-                afficherChrono();
-
-                if (tempsRestant <= 0) {
-                    clearInterval(chronoInterval);
-                    display.classList.add("alerte");
-                    status.textContent = "⏰ Temps écoulé ! Validation automatique...";
-                    document.getElementById("btnValider").disabled = true;
-                    document.getElementById("btnValider").textContent = "⏰ Temps écoulé";
-                    setTimeout(validerQCM, 1000);
-                }
-            }, 1000);
-        }
-
-        function afficherChrono() {
-            const display = document.getElementById("chronoDisplay");
-            const minutes = Math.floor(tempsRestant / 60);
-            const secondes = tempsRestant % 60;
-            display.textContent = `⏱️ ${String(minutes).padStart(2, '0')}:${String(secondes).padStart(2, '0')}`;
-
-            if (tempsRestant < 300 && tempsRestant > 0) {
-                display.classList.add("alerte");
-            } else {
-                display.classList.remove("alerte");
-            }
-        }
-
         // ==================== VALIDER QCM ====================
         function validerQCM() {
             if (qcmValide) return;
-
-            if (chronoInterval) {
-                clearInterval(chronoInterval);
-                chronoInterval = null;
-            }
 
             qcmValide = true;
             document.getElementById("btnValider").disabled = true;
@@ -380,7 +242,6 @@
                 let statut = "neutre";
                 let pointQCM = 0;
 
-                // Vérifier si toutes les bonnes réponses sont cochées et qu'il n'y a pas de mauvaises
                 const toutesBonnesCochees = bonnes.every(b => eleves.includes(b));
                 const aucuneMauvaise = eleves.every(e => bonnes.includes(e));
 
@@ -483,13 +344,8 @@
 
         // ==================== QUITTER / RETOUR ====================
         function quitterQCM() {
-            if (chronoInterval) {
-                clearInterval(chronoInterval);
-                chronoInterval = null;
-            }
             document.getElementById("ecranQCM").classList.add("hidden");
             document.getElementById("ecranAccueil").classList.remove("hidden");
-            document.getElementById("chronoDisplay").classList.remove("alerte");
         }
 
         function retourAccueil() {
