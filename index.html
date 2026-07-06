@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Colle</title>
+    <title>QCM-Bordeaux</title>
     <style>
         * { box-sizing: border-box; }
         body { font-family: Arial; padding: 20px; max-width: 850px; margin: auto; background: #f0f2f5; }
@@ -45,14 +45,14 @@
 <div class="container">
 
     <div id="ecranAccueil">
-        <h1 style="text-align:center;">📚 UE16 - ED1</h1>
+        <h1 style="text-align:center;">🩺 QCM d'entrainement</h1>
         <p style="text-align:center; color:#6c757d;">Télécharge le PDF et fais le QCM</p>
         <div id="listeColles"></div>
     </div>
 
     <div id="ecranQCM" class="hidden">
         <div class="header">
-            <h2>📝 UE16 - ED1</h2>
+            <h2>🦩 UE16 - ED1</h2>
             <button class="btn btn-secondary" onclick="quitterQCM()">✖ Quitter</button>
         </div>
         <div id="questionsContainer"></div>
@@ -73,7 +73,7 @@
     const COLLES = [{
         id: "ue16_ed1",
         titre: "UE16 - ED1",
-        description: "16 questions - 5 réponses possibles",
+        description: "16 questions",
         pdf: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
         qcm: [
             { id: "QCM 1", reponse: ["A", "E"] },
