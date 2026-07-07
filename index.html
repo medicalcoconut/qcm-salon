@@ -46,7 +46,7 @@
 
     <div id="ecranAccueil">
         <h1 style="text-align:center;">🩺 QCM d'entrainement</h1>
-        <p style="text-align:center; color:#6c757d;">Télécharge le PDF et fais le QCM</p>
+        <p style="text-align:center; color:#6c757d;">Télécharge le sujet et fais le QCM</p>
         <div id="listeColles"></div>
     </div>
 
@@ -110,7 +110,7 @@
                     <div style="margin-top:5px;"><span class="badge badge-qcm">${colle.qcm.length} questions</span></div>
                 </div>
                 <div class="actions">
-                    <button class="btn btn-pdf" onclick="telechargerPDF('${colle.id}')">📄 PDF</button>
+                    <button class="btn btn-pdf" onclick="telechargerPDF('${colle.id}')">📄 Sujet</button>
                     <button class="btn btn-success" onclick="lancerQCM('${colle.id}')">🎯 QCM</button>
                 </div>
             </div>`;
