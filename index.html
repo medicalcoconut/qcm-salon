@@ -52,7 +52,7 @@
 
     <div id="ecranQCM" class="hidden">
         <div class="header">
-            <h2>UE16 - ED1</h2>
+            <h2 id="titreQCM">UE16 - ED1</h2>
             <button class="btn btn-secondary" onclick="quitterQCM()">✖ Quitter</button>
         </div>
         <div id="questionsContainer"></div>
@@ -70,6 +70,9 @@
 </div>
 
 <script>
+    // ============================================================
+    // 📦 LA COLLE AVEC SUJET ET CORRECTIONS
+    // ============================================================
     const COLLES = [{
         id: "ue16_ed1",
         titre: "🦩UE16 - ED1",
@@ -120,7 +123,7 @@
 
     function telechargerPDF(id) {
         const colle = COLLES.find(c => c.id === id);
-        if (colle) window.open(colle.pdf, '_blank');
+        if (colle) window.open(colle.sujet, '_blank');
     }
 
     function lancerQCM(id) {
@@ -134,6 +137,7 @@
         document.getElementById("ecranAccueil").classList.add("hidden");
         document.getElementById("ecranQCM").classList.remove("hidden");
         document.getElementById("ecranResultats").classList.add("hidden");
+        document.getElementById("titreQCM").textContent = colle.titre;
 
         genererQuestions();
 
@@ -233,6 +237,7 @@
     function afficherResultats(details, points, total, note) {
         document.getElementById("ecranQCM").classList.add("hidden");
         document.getElementById("ecranResultats").classList.remove("hidden");
+
         const container = document.getElementById("resultatsContainer");
         let html = `<div class="recap"><div class="note">${note.toFixed(1)} / 20</div><div style="font-size:20px;">${points.toFixed(1)} / ${total} points</div><div class="detail-points">1 bonne = 1 pt | 1 faute = 0.5 pt | 2 fautes = 0 pt</div></div><h3 style="margin-top:20px;">📋 Détail par QCM</h3>`;
         details.forEach(d => {
@@ -257,5 +262,6 @@
 
     window.onload = afficherColles;
 </script>
+
 </body>
 </html>
