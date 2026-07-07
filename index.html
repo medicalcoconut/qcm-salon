@@ -37,6 +37,9 @@
         .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; }
         .badge-qcm { background: #e3f2fd; color: #007bff; }
         .detail-points { font-size: 14px; color: #6c757d; margin-top: 5px; }
+        .corrige-section { margin-top: 30px; padding: 20px; border-radius: 12px; background: #fff3cd; border: 2px solid #ffc107; }
+        .corrige-section h3 { margin-top: 0; color: #856404; }
+        .corrige-item { padding: 8px 12px; margin: 5px 0; border-radius: 6px; background: white; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
 
         @media (max-width: 600px) { .colle-item { flex-direction: column; text-align: center; } .colle-item .actions { justify-content: center; } }
     </style>
@@ -52,7 +55,7 @@
 
     <div id="ecranQCM" class="hidden">
         <div class="header">
-            <h2>UE16 - ED1</h2>
+            <h2 id="titreQCM">UE16 - ED1</h2>
             <button class="btn btn-secondary" onclick="quitterQCM()">✖ Quitter</button>
         </div>
         <div id="questionsContainer"></div>
@@ -65,34 +68,25 @@
             <button class="btn btn-secondary" onclick="retourAccueil()">🏠 Accueil</button>
         </div>
         <div id="resultatsContainer"></div>
+        <div id="corrigeContainer" class="corrige-section hidden">
+            <h3>📖 Corrigé</h3>
+            <div id="corrigeListe"></div>
+        </div>
     </div>
 
 </div>
 
 <script>
+    // ============================================================
+    // 📦 DÉFINITION DES COLLES
+    // ============================================================
     const COLLES = [{
         id: "ue16_ed1",
         titre: "🦩UE16 - ED1",
         description: "16 questions",
         sujet: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-        qcm: [
-            { id: "QCM 1", reponse: ["A", "E"] },
-            { id: "QCM 2", reponse: ["D", "E"] },
-            { id: "QCM 3", reponse: ["B", "C", "D"] },
-            { id: "QCM 4", reponse: ["A", "B", "E"] },
-            { id: "QCM 5", reponse: ["A", "D"] },
-            { id: "QCM 6", reponse: ["B", "D"] },
-            { id: "QCM 7", reponse: ["A", "E"] },
-            { id: "QCM 8", reponse: ["A"] },
-            { id: "QCM 9", reponse: ["D", "E"] },
-            { id: "QCM 10", reponse: ["C", "D"] },
-            { id: "QCM 11", reponse: ["C"] },
-            { id: "QCM 12", reponse: ["B", "C", "D"] },
-            { id: "QCM 13", reponse: ["B", "D", "E"] },
-            { id: "QCM 14", reponse: ["A", "E"] },
-            { id: "QCM 15", reponse: ["B", "C", "D"] },
-            { id: "QCM 16", reponse: ["A", "C", "D", "E"] }
-        ]
+        correctionFile: "corrections/ue16_ed1.js",
+        correctionVar: "CORRECTION_UE16_ED1"
     }];
 
     let questionsActuelles = [];
@@ -107,11 +101,10 @@
                 <div class="info">
                     <h3>${colle.titre}</h3>
                     <div class="desc">${colle.description}</div>
-                    <div style="margin-top:5px;"><span class="badge badge-qcm">${colle.qcm.length} questions</span></div>
                 </div>
                 <div class="actions">
                     <button class="btn btn-pdf" onclick="telechargerPDF('${colle.id}')">📄 Sujet</button>
-                    <button class="btn btn-success" onclick="lancerQCM('${colle.id}')">📝 QCM</button>
+                    <button class="btn btn-success" onclick="chargerCorrectionEtLancer('${colle.id}')">📝 QCM</button>
                 </div>
             </div>`;
         });
@@ -120,20 +113,51 @@
 
     function telechargerPDF(id) {
         const colle = COLLES.find(c => c.id === id);
-        if (colle) window.open(colle.pdf, '_blank');
+        if (colle) window.open(colle.sujet, '_blank');
     }
 
-    function lancerQCM(id) {
+    function chargerCorrectionEtLancer(id) {
         const colle = COLLES.find(c => c.id === id);
         if (!colle) { alert("❌ Colle introuvable !"); return; }
 
-        questionsActuelles = colle.qcm;
+        const correction = window[colle.correctionVar];
+        if (correction) {
+            lancerQCM(id, correction);
+            return;
+        }
+
+        const script = document.createElement("script");
+        script.src = colle.correctionFile;
+        script.onload = function() {
+            const correction = window[colle.correctionVar];
+            if (correction) {
+                lancerQCM(id, correction);
+            } else {
+                alert("❌ Erreur : fichier de correction introuvable !");
+            }
+        };
+        script.onerror = function() {
+            alert("❌ Erreur : impossible de charger le fichier de correction !");
+        };
+        document.head.appendChild(script);
+    }
+
+    function lancerQCM(id, correction) {
+        const colle = COLLES.find(c => c.id === id);
+        if (!colle) { alert("❌ Colle introuvable !"); return; }
+
+        questionsActuelles = correction.map((reponse, index) => ({
+            id: `QCM ${index + 1}`,
+            reponse: reponse
+        }));
+
         reponsesEleve = {};
         qcmValide = false;
 
         document.getElementById("ecranAccueil").classList.add("hidden");
         document.getElementById("ecranQCM").classList.remove("hidden");
         document.getElementById("ecranResultats").classList.add("hidden");
+        document.getElementById("titreQCM").textContent = colle.titre;
 
         genererQuestions();
 
@@ -233,6 +257,7 @@
     function afficherResultats(details, points, total, note) {
         document.getElementById("ecranQCM").classList.add("hidden");
         document.getElementById("ecranResultats").classList.remove("hidden");
+
         const container = document.getElementById("resultatsContainer");
         let html = `<div class="recap"><div class="note">${note.toFixed(1)} / 20</div><div style="font-size:20px;">${points.toFixed(1)} / ${total} points</div><div class="detail-points">1 bonne = 1 pt | 1 faute = 0.5 pt | 2 fautes = 0 pt</div></div><h3 style="margin-top:20px;">📋 Détail par QCM</h3>`;
         details.forEach(d => {
@@ -243,6 +268,22 @@
             html += `<div class="resultat-item ${couleur}"><span><strong>${d.id}</strong></span><span>${icone} Toi : <strong>${d.eleve}</strong> | Bonne(s) : <strong>${d.bonnes}</strong></span><span><strong>${pointAffiche}</strong></span></div>`;
         });
         container.innerHTML = html;
+
+        afficherCorrige();
+    }
+
+    function afficherCorrige() {
+        const container = document.getElementById("corrigeListe");
+        const corrigeContainer = document.getElementById("corrigeContainer");
+        let html = "";
+
+        questionsActuelles.forEach((qcm, index) => {
+            const bonnes = qcm.reponse.join(", ");
+            html += `<div class="corrige-item"><span><strong>${qcm.id}</strong></span><span>✅ ${bonnes}</span></div>`;
+        });
+
+        container.innerHTML = html;
+        corrigeContainer.classList.remove("hidden");
     }
 
     function quitterQCM() {
@@ -253,9 +294,11 @@
     function retourAccueil() {
         document.getElementById("ecranResultats").classList.add("hidden");
         document.getElementById("ecranAccueil").classList.remove("hidden");
+        document.getElementById("corrigeContainer").classList.add("hidden");
     }
 
     window.onload = afficherColles;
 </script>
+
 </body>
 </html>
