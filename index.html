@@ -18,7 +18,6 @@
         .btn-correction { background: #ffc107; color: black; }
         .btn-correction:hover { background: #e0a800; }
         
-        /* Style des onglets */
         .onglets-container {
             display: flex;
             gap: 8px;
@@ -37,18 +36,9 @@
             font-size: 15px;
             transition: 0.3s;
         }
-        .onglet:hover {
-            background: #e9ecef;
-            border-color: #adb5bd;
-        }
-        .onglet.active {
-            background: #007bff;
-            color: white;
-            border-color: #007bff;
-        }
-        .onglet.active:hover {
-            background: #0056b3;
-        }
+        .onglet:hover { background: #e9ecef; border-color: #adb5bd; }
+        .onglet.active { background: #007bff; color: white; border-color: #007bff; }
+        .onglet.active:hover { background: #0056b3; }
 
         .question { background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 4px solid #007bff; }
         .question label { display: inline-block; margin: 5px 8px 5px 0; cursor: pointer; padding: 10px 20px; border-radius: 8px; border: 2px solid #dee2e6; font-weight: bold; font-size: 18px; min-width: 50px; text-align: center; }
@@ -70,6 +60,7 @@
         .colle-item .actions { display: flex; gap: 10px; flex-wrap: wrap; }
         .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; }
         .badge-qcm { background: #e3f2fd; color: #007bff; }
+        .badge-ue { padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; background: #007bff; color: white; }
         .detail-points { font-size: 14px; color: #6c757d; margin-top: 5px; }
         .empty-message { text-align: center; color: #6c757d; padding: 30px; font-size: 18px; }
 
@@ -87,7 +78,6 @@
         <h1 style="text-align:center;">🩺 QCM d'entrainement</h1>
         <p style="text-align:center; color:#6c757d;">Télécharge le sujet, fais le QCM ou consulte la correction</p>
         
-        <!-- ===== ONGLETS PAR UE ===== -->
         <div class="onglets-container" id="ongletsContainer">
             <div class="onglet active" data-ue="toutes" onclick="filtrerParUE('toutes')">📚 Toutes</div>
         </div>
@@ -116,9 +106,56 @@
 
 <script>
     // ============================================================
-    // 📦 LES COLLES (avec l'UE en plus)
+    // 🎨 CORRESPONDANCE UE → EMOJI
+    // ============================================================
+    const UE_EMOJIS = {
+        "UE5": "♟️",
+        "UE8": "🍋",
+        "UE11": "🐁",
+        "UE16": "🦩",
+        "UE21": "🥕"
+    };
+
+    // ============================================================
+    // 📦 LES COLLES
     // ============================================================
     const COLLES = [{
+        id: "ue5_ed1",
+        ue: "UE5",
+        titre: "♟️UE5 - ED1",
+        description: "X questions",
+        sujet: "https://drive.google.com/file/d/1gIWf3LzuGhFg2OdknPemhy0rSfXKTCpo/view?usp=drivesdk",
+        correction: "https://drive.google.com/file/d/1ELboAPBCcdS6wDhg7y-sAl8m5YYauKlY/view?usp=drivesdk",
+        qcm: [
+            { id: "QCM 1", reponse: ["A", "E"] },
+            { id: "QCM 2", reponse: ["D", "E"] }
+        ]
+    },
+    {
+        id: "ue8_ed1",
+        ue: "UE8",
+        titre: "🍋UE8 - ED1",
+        description: "X questions",
+        sujet: "https://drive.google.com/file/d/1gIWf3LzuGhFg2OdknPemhy0rSfXKTCpo/view?usp=drivesdk",
+        correction: "https://drive.google.com/file/d/1ELboAPBCcdS6wDhg7y-sAl8m5YYauKlY/view?usp=drivesdk",
+        qcm: [
+            { id: "QCM 1", reponse: ["A", "E"] },
+            { id: "QCM 2", reponse: ["D", "E"] }
+        ]
+    },
+    {
+        id: "ue11_ed1",
+        ue: "UE11",
+        titre: "🐁UE11 - ED1",
+        description: "X questions",
+        sujet: "https://drive.google.com/file/d/1gIWf3LzuGhFg2OdknPemhy0rSfXKTCpo/view?usp=drivesdk",
+        correction: "https://drive.google.com/file/d/1ELboAPBCcdS6wDhg7y-sAl8m5YYauKlY/view?usp=drivesdk",
+        qcm: [
+            { id: "QCM 1", reponse: ["A", "E"] },
+            { id: "QCM 2", reponse: ["D", "E"] }
+        ]
+    },
+    {
         id: "ue16_ed1",
         ue: "UE16",
         titre: "🦩UE16 - ED1",
@@ -147,7 +184,7 @@
     {
         id: "ue21_ed1",
         ue: "UE21",
-        titre: "🟠UE21 - ED1",
+        titre: "🥕UE21 - ED1",
         description: "20 questions",
         sujet: "https://drive.google.com/file/d/15MMjdfInAVrpxLEPOGFNztCOoXQlX5iZ/view?usp=drivesdk",
         correction: "https://drive.google.com/file/d/17mMACP5_5xMdl4r6lHXzk1uVWK8jC4Dg/view?usp=drivesdk",
@@ -188,7 +225,12 @@
         
         let html = "";
         ues.forEach(ue => {
-            const label = ue === "toutes" ? "📚 Toutes" : ue;
+            let label = ue;
+            if (ue === "toutes") {
+                label = "📚 Toutes";
+            } else if (UE_EMOJIS[ue]) {
+                label = `${UE_EMOJIS[ue]} ${ue}`;
+            }
             const activeClass = ueFiltre === ue ? "active" : "";
             html += `<div class="onglet ${activeClass}" data-ue="${ue}" onclick="filtrerParUE('${ue}')">${label}</div>`;
         });
@@ -206,12 +248,11 @@
     }
 
     // ============================================================
-    // 📋 AFFICHER LES COLLES (avec filtre)
+    // 📋 AFFICHER LES COLLES
     // ============================================================
     function afficherColles() {
         const container = document.getElementById("listeColles");
         
-        // Filtrer les colles par UE
         const collesFiltrees = ueFiltre === "toutes" 
             ? COLLES 
             : COLLES.filter(colle => colle.ue === ueFiltre);
@@ -223,13 +264,14 @@
 
         let html = "";
         collesFiltrees.forEach(colle => {
+            const emoji = UE_EMOJIS[colle.ue] || "";
             html += `<div class="colle-item">
                 <div class="info">
                     <h3>${colle.titre}</h3>
                     <div class="desc">${colle.description}</div>
                     <div style="margin-top:5px;">
                         <span class="badge badge-qcm">${colle.qcm.length} questions</span>
-                        <span class="badge badge-qcm" style="background:#007bff; color:white;">${colle.ue}</span>
+                        <span class="badge badge-ue">${emoji} ${colle.ue}</span>
                     </div>
                 </div>
                 <div class="actions">
@@ -302,6 +344,10 @@
     // ============================================================
     // ✅ VALIDER LE QCM
     // ============================================================
+    let questionsActuelles = [];
+    let reponsesEleve = {};
+    let qcmValide = false;
+
     function validerQCM() {
         if (qcmValide) return;
 
