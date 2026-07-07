@@ -74,7 +74,7 @@
         id: "ue16_ed1",
         titre: "🦩UE16 - ED1",
         description: "16 questions",
-        pdf: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+        Sujet: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
         qcm: [
             { id: "QCM 1", reponse: ["A", "E"] },
             { id: "QCM 2", reponse: ["D", "E"] },
@@ -110,7 +110,7 @@
                     <div style="margin-top:5px;"><span class="badge badge-qcm">${colle.qcm.length} questions</span></div>
                 </div>
                 <div class="actions">
-                    <button class="btn btn-pdf" onclick="telechargerPDF('${colle.id}')">📜 Sujet</button>
+                    <button class="btn btn-pdf" onclick="telechargerPDF('${colle.id}')">Sujet</button>
                     <button class="btn btn-success" onclick="lancerQCM('${colle.id}')">🎯 QCM</button>
                 </div>
             </div>`;
