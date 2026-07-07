@@ -78,7 +78,7 @@
 
 <script>
     // ============================================================
-    // 📦 DÉFINITION DES COLLES
+    // 📦 DÉFINITION DES COLLES (sans les corrections)
     // ============================================================
     const COLLES = [{
         id: "ue16_ed1",
@@ -116,16 +116,21 @@
         if (colle) window.open(colle.sujet, '_blank');
     }
 
+    // ============================================================
+    // 🔄 CHARGER LA CORRECTION DEPUIS LE FICHIER EXTERNE
+    // ============================================================
     function chargerCorrectionEtLancer(id) {
         const colle = COLLES.find(c => c.id === id);
         if (!colle) { alert("❌ Colle introuvable !"); return; }
 
+        // Vérifier si la correction est déjà chargée
         const correction = window[colle.correctionVar];
         if (correction) {
             lancerQCM(id, correction);
             return;
         }
 
+        // Sinon, charger le fichier dynamiquement
         const script = document.createElement("script");
         script.src = colle.correctionFile;
         script.onload = function() {
@@ -142,10 +147,14 @@
         document.head.appendChild(script);
     }
 
+    // ============================================================
+    // 🚀 LANCER LE QCM
+    // ============================================================
     function lancerQCM(id, correction) {
         const colle = COLLES.find(c => c.id === id);
         if (!colle) { alert("❌ Colle introuvable !"); return; }
 
+        // Construire les questions à partir de la correction
         questionsActuelles = correction.map((reponse, index) => ({
             id: `QCM ${index + 1}`,
             reponse: reponse
@@ -165,6 +174,9 @@
         document.getElementById("btnValider").textContent = "✅ Valider";
     }
 
+    // ============================================================
+    // 📝 GÉNÉRER LES QUESTIONS
+    // ============================================================
     function genererQuestions() {
         const container = document.getElementById("questionsContainer");
         const lettres = ["A", "B", "C", "D", "E"];
@@ -193,6 +205,9 @@
         }
     }
 
+    // ============================================================
+    // ✅ VALIDER LE QCM
+    // ============================================================
     function validerQCM() {
         if (qcmValide) return;
 
@@ -254,6 +269,9 @@
         afficherResultats(details, points, total, noteSur20);
     }
 
+    // ============================================================
+    // 📊 AFFICHER LES RÉSULTATS
+    // ============================================================
     function afficherResultats(details, points, total, note) {
         document.getElementById("ecranQCM").classList.add("hidden");
         document.getElementById("ecranResultats").classList.remove("hidden");
