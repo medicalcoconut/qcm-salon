@@ -123,14 +123,12 @@
         const colle = COLLES.find(c => c.id === id);
         if (!colle) { alert("❌ Colle introuvable !"); return; }
 
-        // Vérifier si la correction est déjà chargée
         const correction = window[colle.correctionVar];
         if (correction) {
             lancerQCM(id, correction);
             return;
         }
 
-        // Sinon, charger le fichier dynamiquement
         const script = document.createElement("script");
         script.src = colle.correctionFile;
         script.onload = function() {
@@ -154,7 +152,6 @@
         const colle = COLLES.find(c => c.id === id);
         if (!colle) { alert("❌ Colle introuvable !"); return; }
 
-        // Construire les questions à partir de la correction
         questionsActuelles = correction.map((reponse, index) => ({
             id: `QCM ${index + 1}`,
             reponse: reponse
