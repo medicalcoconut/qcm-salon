@@ -197,6 +197,9 @@
         }
     }
 
+    // ============================================================
+    // ✅ VALIDER LE QCM (AVEC LA BONNE NOTATION)
+    // ============================================================
     function validerQCM() {
         if (qcmValide) return;
 
@@ -212,25 +215,57 @@
             const bonnes = qcm.reponse;
             const eleves = reponsesEleve[index] || [];
             const eleveStr = eleves.length > 0 ? eleves.join(", ") : "Non coché";
+
+            // Compter les erreurs
+            let nbErreurs = 0;
+
+            // Réponses manquantes (bonnes réponses non cochées)
+            bonnes.forEach(b => {
+                if (!eleves.includes(b)) nbErreurs++;
+            });
+
+            // Réponses en trop (cochées mais pas dans les bonnes)
+            eleves.forEach(e => {
+                if (!bonnes.includes(e)) nbErreurs++;
+            });
+
             let statut = "neutre";
             let pointQCM = 0;
-            const toutesBonnesCochees = bonnes.every(b => eleves.includes(b));
-            const aucuneMauvaise = eleves.every(e => bonnes.includes(e));
 
-            if (eleves.length === 0) { statut = "mauvaise"; pointQCM = 0; }
-            else if (toutesBonnesCochees && aucuneMauvaise && eleves.length === bonnes.length) { statut = "bonne"; pointQCM = 1; }
-            else if (toutesBonnesCochees && aucuneMauvaise && eleves.length < bonnes.length) { statut = "bonne"; pointQCM = 0.5; }
-            else if (toutesBonnesCochees && !aucuneMauvaise) { statut = "bonne"; pointQCM = 0.5; }
-            else { statut = "mauvaise"; pointQCM = 0.5; }
+            if (eleves.length === 0) {
+                statut = "mauvaise";
+                pointQCM = 0;
+            } else if (nbErreurs === 0) {
+                statut = "bonne";
+                pointQCM = 1;
+            } else if (nbErreurs === 1) {
+                statut = "bonne";
+                pointQCM = 0.5;
+            } else {
+                statut = "mauvaise";
+                pointQCM = 0;
+            }
 
             points += pointQCM;
-            details.push({ id: qcm.id, bonnes: bonnes.join(", "), eleve: eleveStr, statut: statut, point: pointQCM });
+
+            details.push({
+                id: qcm.id,
+                bonnes: bonnes.join(", "),
+                eleve: eleveStr,
+                statut: statut,
+                point: pointQCM,
+                nbErreurs: nbErreurs
+            });
 
             const div = document.getElementById(`q${index}`);
             div.className = `question ${statut === 'bonne' ? 'bonne' : 'mauvaise'}`;
+
             const labels = div.querySelectorAll("label");
             labels.forEach(label => {
                 const input = document.getElementById(label.htmlFor);
+                label.style.border = "2px solid #dee2e6";
+                label.style.background = "transparent";
+
                 if (bonnes.includes(input.value)) {
                     label.style.border = "3px solid #28a745";
                     label.style.background = "#d4edda";
@@ -246,31 +281,46 @@
             });
         });
 
-        let nbFautes = details.filter(d => d.statut === "mauvaise" && d.eleve !== "Non coché").length;
-        if (nbFautes >= 2) {
-            details.forEach(d => {
-                if (d.statut === "mauvaise" && d.eleve !== "Non coché") d.point = 0;
-            });
-            points = details.reduce((sum, d) => sum + d.point, 0);
-        }
-
         const noteSur20 = (points / total) * 20;
         afficherResultats(details, points, total, noteSur20);
     }
 
+    // ============================================================
+    // 📊 AFFICHER LES RÉSULTATS
+    // ============================================================
     function afficherResultats(details, points, total, note) {
         document.getElementById("ecranQCM").classList.add("hidden");
         document.getElementById("ecranResultats").classList.remove("hidden");
 
         const container = document.getElementById("resultatsContainer");
-        let html = `<div class="recap"><div class="note">${note.toFixed(1)} / 20</div><div style="font-size:20px;">${points.toFixed(1)} / ${total} points</div><div class="detail-points">1 bonne = 1 pt | 1 faute = 0.5 pt | 2 fautes = 0 pt</div></div><h3 style="margin-top:20px;">📋 Détail par QCM</h3>`;
+        let html = `<div class="recap">
+            <div class="note">${note.toFixed(1)} / 20</div>
+            <div style="font-size:20px;">${points.toFixed(1)} / ${total} points</div>
+            <div class="detail-points">0 erreur = 1 pt | 1 erreur = 0.5 pt | 2 erreurs ou plus = 0 pt</div>
+        </div>
+        <h3 style="margin-top:20px;">📋 Détail par QCM</h3>`;
+
         details.forEach(d => {
             const estJuste = d.statut === "bonne";
             const icone = estJuste ? "✅" : "❌";
             const couleur = estJuste ? "bonne" : "mauvaise";
-            const pointAffiche = d.point === 1 ? "1 pt" : d.point === 0.5 ? "0.5 pt" : "0 pt";
-            html += `<div class="resultat-item ${couleur}"><span><strong>${d.id}</strong></span><span>${icone} Toi : <strong>${d.eleve}</strong> | Bonne(s) : <strong>${d.bonnes}</strong></span><span><strong>${pointAffiche}</strong></span></div>`;
+            let pointAffiche = "0 pt";
+            if (d.point === 1) pointAffiche = "1 pt";
+            else if (d.point === 0.5) pointAffiche = "0.5 pt";
+            else pointAffiche = "0 pt";
+
+            let erreurMsg = "";
+            if (d.nbErreurs === 0) erreurMsg = "✅ 0 erreur";
+            else if (d.nbErreurs === 1) erreurMsg = "⚠️ 1 erreur";
+            else erreurMsg = "❌ " + d.nbErreurs + " erreurs";
+
+            html += `<div class="resultat-item ${couleur}">
+                <span><strong>${d.id}</strong></span>
+                <span>${icone} Toi : <strong>${d.eleve}</strong> | Bonne(s) : <strong>${d.bonnes}</strong></span>
+                <span><strong>${pointAffiche}</strong> (${erreurMsg})</span>
+            </div>`;
         });
+
         container.innerHTML = html;
     }
 
