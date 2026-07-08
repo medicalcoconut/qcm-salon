@@ -5,7 +5,7 @@
     <title>QCM-Bordeaux</title>
     <style>
         * { box-sizing: border-box; }
-        body { font-family: Arial; padding: 20px; max-width: 900px; margin: auto; background: #f0f2f5; }
+        body { font-family: Arial; padding: 20px; max-width: 1000px; margin: auto; background: #f0f2f5; }
         .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .hidden { display: none !important; }
         .btn { padding: 12px 30px; font-size: 18px; border: none; border-radius: 8px; cursor: pointer; margin: 5px; }
@@ -18,15 +18,14 @@
         .btn-correction { background: #ffc107; color: black; }
         .btn-correction:hover { background: #e0a800; }
         
-        .onglets-container {
+        /* Onglets principaux (Année) */
+        .onglets-principaux {
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
-            margin: 15px 0 20px 0;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #e9ecef;
+            margin: 10px 0 5px 0;
         }
-        .onglet {
+        .onglet-annee {
             padding: 10px 25px;
             border-radius: 20px;
             border: 2px solid #dee2e6;
@@ -36,9 +35,32 @@
             font-size: 15px;
             transition: 0.3s;
         }
-        .onglet:hover { background: #e9ecef; border-color: #adb5bd; }
-        .onglet.active { background: #007bff; color: white; border-color: #007bff; }
-        .onglet.active:hover { background: #0056b3; }
+        .onglet-annee:hover { background: #e9ecef; border-color: #adb5bd; }
+        .onglet-annee.active { background: #007bff; color: white; border-color: #007bff; }
+        .onglet-annee.active:hover { background: #0056b3; }
+
+        /* Sous-onglets (Type) */
+        .sous-onglets {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 10px 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        .onglet-type {
+            padding: 8px 20px;
+            border-radius: 15px;
+            border: 2px solid #dee2e6;
+            background: #f8f9fa;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+        .onglet-type:hover { background: #e9ecef; border-color: #adb5bd; }
+        .onglet-type.active { background: #28a745; color: white; border-color: #28a745; }
+        .onglet-type.active:hover { background: #1e7e34; }
 
         .question { background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 4px solid #007bff; }
         .question label { display: inline-block; margin: 5px 8px 5px 0; cursor: pointer; padding: 10px 20px; border-radius: 8px; border: 2px solid #dee2e6; font-weight: bold; font-size: 18px; min-width: 50px; text-align: center; }
@@ -61,13 +83,18 @@
         .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; }
         .badge-qcm { background: #e3f2fd; color: #007bff; }
         .badge-ue { padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; background: #007bff; color: white; }
+        .badge-type { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .badge-annales { background: #ffc107; color: black; }
+        .badge-colle { background: #17a2b8; color: white; }
+        .badge-ed { background: #fd7e14; color: white; }
         .detail-points { font-size: 14px; color: #6c757d; margin-top: 5px; }
         .empty-message { text-align: center; color: #6c757d; padding: 30px; font-size: 18px; }
+        .filtres-info { text-align: center; color: #6c757d; font-size: 14px; margin-bottom: 10px; }
 
         @media (max-width: 600px) { 
             .colle-item { flex-direction: column; text-align: center; } 
             .colle-item .actions { justify-content: center; }
-            .onglets-container { justify-content: center; }
+            .onglets-principaux, .sous-onglets { justify-content: center; }
         }
     </style>
 </head>
@@ -78,9 +105,20 @@
         <h1 style="text-align:center;">🩺 QCM d'entrainement</h1>
         <p style="text-align:center; color:#6c757d;">Télécharge le sujet, fais le QCM ou consulte la correction</p>
         
-        <div class="onglets-container" id="ongletsContainer">
-            <div class="onglet active" data-ue="toutes" onclick="filtrerParUE('toutes')">📚 Toutes</div>
+        <!-- Onglets Année -->
+        <div class="onglets-principaux" id="ongletsAnnee">
+            <div class="onglet-annee active" data-annee="toutes" onclick="filtrerParAnnee('toutes')">📅 Toutes</div>
         </div>
+
+        <!-- Sous-onglets Type -->
+        <div class="sous-onglets" id="sousOngletsType">
+            <div class="onglet-type active" data-type="tous" onclick="filtrerParType('tous')">📚 Tous</div>
+            <div class="onglet-type" data-type="annales" onclick="filtrerParType('annales')">📝 Annales</div>
+            <div class="onglet-type" data-type="colle" onclick="filtrerParType('colle')">📖 Colles</div>
+            <div class="onglet-type" data-type="ed" onclick="filtrerParType('ed')">✏️ ED</div>
+        </div>
+
+        <div id="filtresInfo" class="filtres-info"></div>
         
         <div id="listeColles"></div>
     </div>
@@ -116,15 +154,29 @@
         "UE21": "🥕"
     };
 
+    const TYPE_LABELS = {
+        "annales": "📝 Annales",
+        "colle": "📖 Colle",
+        "ed": "✏️ ED"
+    };
+
+    const TYPE_BADGE = {
+        "annales": "badge-annales",
+        "colle": "badge-colle",
+        "ed": "badge-ed"
+    };
+
     // ============================================================
-    // 📦 TOUTES LES COLLES
+    // 📦 TOUTES LES COLLES (avec année et type)
     // ============================================================
     const COLLES = [
-        // ============ UE 5 ============
+        // ============ UE5 - ANNALES ============
         {
             id: "ue5_2021",
             ue: "UE5",
-            titre: "♟️UE5 - 20/21 - Session 1",
+            annee: "20/21",
+            type: "annales",
+            titre: "♟️UE5 - 20/21 - Annales",
             description: "9 questions",
             sujet: "https://drive.google.com/file/d/1BS1kI3WFx_0GddrSMYZ8W_shR-gzJsBd/view?usp=drivesdk",
             correction: "https://drive.google.com/file/d/184e23gPAtNSR-Vgz20M3zDIghqTCa2Jj/view?usp=drivesdk",
@@ -143,7 +195,9 @@
         {
             id: "ue5_2021_rtp",
             ue: "UE5",
-            titre: "♟️UE5 - 20/21 - Session 2 (RTP)",
+            annee: "20/21",
+            type: "annales",
+            titre: "♟️UE5 - 20/21 - Annales (RTP)",
             description: "9 questions",
             sujet: "https://drive.google.com/file/d/1utDjfwAIPgTP4GThV8hZ0q3uipVhHUOB/view?usp=drivesdk",
             correction: "https://drive.google.com/file/d/1BzGqoUBUWUHIR7X4ze-Ho6Hg5F0q4gmK/view?usp=drivesdk",
@@ -162,7 +216,9 @@
         {
             id: "ue5_2022",
             ue: "UE5",
-            titre: "♟️UE5 - 21/22 - Session 1",
+            annee: "21/22",
+            type: "annales",
+            titre: "♟️UE5 - 21/22 - Annales",
             description: "10 questions",
             sujet: "https://drive.google.com/file/d/13jR8ojw0axyVxuZbbVyNWkfSbSJ25C-8/view?usp=drivesdk",
             correction: "https://drive.google.com/file/d/1oHD-QRWiR4-_yaNb0-Yjtcy3IDmOI-WC/view?usp=drivesdk",
@@ -182,7 +238,9 @@
         {
             id: "ue5_2022_rtp",
             ue: "UE5",
-            titre: "♟️UE5 - 21/22 - Session 2 (RTP)",
+            annee: "21/22",
+            type: "annales",
+            titre: "♟️UE5 - 21/22 - Annales (RTP)",
             description: "11 questions",
             sujet: "https://drive.google.com/file/d/1fv62SJQzRJJ9SDKaacSa1KJ4eViW5AyU/view?usp=drivesdk",
             correction: "https://drive.google.com/file/d/1rc3tL4ltbunFxPs_GndVt-US0Grq74jF/view?usp=drivesdk",
@@ -203,7 +261,9 @@
         {
             id: "ue5_2023",
             ue: "UE5",
-            titre: "♟️UE5 - 22/23 - Session 1",
+            annee: "22/23",
+            type: "annales",
+            titre: "♟️UE5 - 22/23 - Annales",
             description: "11 questions",
             sujet: "https://drive.google.com/file/d/1vS2b3Gd2mekSg0jd3RAnwHFyX5wNcXFX/view?usp=drivesdk",
             correction: "https://drive.google.com/file/d/1M4F2H5QmWF9E1XbvOKXLBzgciPD-IxSR/view?usp=drivesdk",
@@ -224,7 +284,9 @@
         {
             id: "ue5_2023_rtp",
             ue: "UE5",
-            titre: "♟️UE5 - 22/23 - Session 2 (RTP)",
+            annee: "22/23",
+            type: "annales",
+            titre: "♟️UE5 - 22/23 - Annales (RTP)",
             description: "12 questions",
             sujet: "https://drive.google.com/file/d/1s0ImDa8YtR0J_trqZcFgciw0j9qn-KY3/view?usp=drivesdk",
             correction: "https://drive.google.com/file/d/1pQV5FSPM7HtnX7i998zRhLdF7t_dhiXk/view?usp=drivesdk",
@@ -246,7 +308,9 @@
         {
             id: "ue5_2024",
             ue: "UE5",
-            titre: "♟️UE5 - 23/24 - Session 1",
+            annee: "23/24",
+            type: "annales",
+            titre: "♟️UE5 - 23/24 - Annales",
             description: "9 questions",
             sujet: "https://drive.google.com/file/d/1zfM9KAMGZMTBnB5jCbUX5AeVJTCvlJEc/view?usp=drivesdk",
             correction: "https://drive.google.com/file/d/1fm1TrhV3h-EZRU3chTkTiUhhoSVUBSQ_/view?usp=drivesdk",
@@ -265,7 +329,9 @@
         {
             id: "ue5_2024_rtp",
             ue: "UE5",
-            titre: "♟️UE5 - 23/24 - Session 2 (RTP)",
+            annee: "23/24",
+            type: "annales",
+            titre: "♟️UE5 - 23/24 - Annales (RTP)",
             description: "10 questions",
             sujet: "https://drive.google.com/file/d/1djsmSjNtQdozgF5ohdfkAtJBN-lh4SPz/view?usp=drivesdk",
             correction: "https://drive.google.com/file/d/1l6vjQ8Hmt1HeFt6mKVgMEyDtJaPCwQSm/view?usp=drivesdk",
@@ -285,7 +351,9 @@
         {
             id: "ue5_2025",
             ue: "UE5",
-            titre: "♟️UE5 - 24/25 - Session 1",
+            annee: "24/25",
+            type: "annales",
+            titre: "♟️UE5 - 24/25 - Annales",
             description: "10 questions",
             sujet: "https://drive.google.com/file/d/1HmyK9fNnlT1uwoxb0PBfEYBx-tnbTFiB/view?usp=drivesdk",
             correction: "https://drive.google.com/file/d/1hBf_xuibd-B2l8XEgEKX-Y7JLOuk4ilJ/view?usp=drivesdk",
@@ -305,7 +373,9 @@
         {
             id: "ue5_2025_rtp",
             ue: "UE5",
-            titre: "♟️UE5 - 24/25 - Session 2 (RTP)",
+            annee: "24/25",
+            type: "annales",
+            titre: "♟️UE5 - 24/25 - Annales (RTP)",
             description: "9 questions",
             sujet: "https://drive.google.com/file/d/1H-gF30UiOASmcgAu2D9IQFRa7xEgl2dU/view?usp=drivesdk",
             correction: "https://drive.google.com/file/d/1Bu4-IoVmOZV-yvuTTiqKcDnUZGBZpgCp/view?usp=drivesdk",
@@ -324,7 +394,9 @@
         {
             id: "ue5_2026",
             ue: "UE5",
-            titre: "♟️UE5 - 25/26 - Session 1",
+            annee: "25/26",
+            type: "annales",
+            titre: "♟️UE5 - 25/26 - Annales",
             description: "9 questions",
             sujet: "https://drive.google.com/file/d/1YORvb-WKHGLlpYAesdy3O0gAPdZe22by/view?usp=drivesdk",
             correction: "https://drive.google.com/file/d/1Ffwi9uvqqwK047fHsTlgkzBuGHjKF9vE/view?usp=drivesdk",
@@ -341,11 +413,75 @@
             ]
         },
 
-        // ============ UE 8 ============
+        // ============ FAUSSES COLLES UE5 ============
+        {
+            id: "ue5_colle_2021",
+            ue: "UE5",
+            annee: "20/21",
+            type: "colle",
+            titre: "♟️UE5 - 20/21 - Colle",
+            description: "8 questions - Colle",
+            sujet: "https://drive.google.com/file/d/1BS1kI3WFx_0GddrSMYZ8W_shR-gzJsBd/view?usp=drivesdk",
+            correction: "https://drive.google.com/file/d/184e23gPAtNSR-Vgz20M3zDIghqTCa2Jj/view?usp=drivesdk",
+            qcm: [
+                { id: "QCM 1", reponse: ["A", "C"] },
+                { id: "QCM 2", reponse: ["B", "D"] },
+                { id: "QCM 3", reponse: ["A", "E"] },
+                { id: "QCM 4", reponse: ["C", "D"] },
+                { id: "QCM 5", reponse: ["B"] },
+                { id: "QCM 6", reponse: ["A", "C", "E"] },
+                { id: "QCM 7", reponse: ["D"] },
+                { id: "QCM 8", reponse: ["A", "B"] }
+            ]
+        },
+        {
+            id: "ue5_colle_2022",
+            ue: "UE5",
+            annee: "21/22",
+            type: "colle",
+            titre: "♟️UE5 - 21/22 - Colle",
+            description: "8 questions - Colle",
+            sujet: "https://drive.google.com/file/d/1BS1kI3WFx_0GddrSMYZ8W_shR-gzJsBd/view?usp=drivesdk",
+            correction: "https://drive.google.com/file/d/184e23gPAtNSR-Vgz20M3zDIghqTCa2Jj/view?usp=drivesdk",
+            qcm: [
+                { id: "QCM 1", reponse: ["B", "E"] },
+                { id: "QCM 2", reponse: ["A", "D"] },
+                { id: "QCM 3", reponse: ["C"] },
+                { id: "QCM 4", reponse: ["B", "C", "D"] },
+                { id: "QCM 5", reponse: ["A", "E"] },
+                { id: "QCM 6", reponse: ["D", "E"] },
+                { id: "QCM 7", reponse: ["A", "B", "C"] },
+                { id: "QCM 8", reponse: ["B"] }
+            ]
+        },
+
+        // ============ FAUSSES ED UE5 ============
+        {
+            id: "ue5_ed_2021",
+            ue: "UE5",
+            annee: "20/21",
+            type: "ed",
+            titre: "♟️UE5 - 20/21 - ED",
+            description: "6 questions - ED",
+            sujet: "https://drive.google.com/file/d/1BS1kI3WFx_0GddrSMYZ8W_shR-gzJsBd/view?usp=drivesdk",
+            correction: "https://drive.google.com/file/d/184e23gPAtNSR-Vgz20M3zDIghqTCa2Jj/view?usp=drivesdk",
+            qcm: [
+                { id: "QCM 1", reponse: ["A", "C", "D"] },
+                { id: "QCM 2", reponse: ["B", "E"] },
+                { id: "QCM 3", reponse: ["A", "D"] },
+                { id: "QCM 4", reponse: ["C", "E"] },
+                { id: "QCM 5", reponse: ["B", "D", "E"] },
+                { id: "QCM 6", reponse: ["A", "B", "C"] }
+            ]
+        },
+
+        // ============ UE8 ============
         {
             id: "ue8_2021",
             ue: "UE8",
-            titre: "🍋UE8 - 20/21 - Session 1",
+            annee: "20/21",
+            type: "annales",
+            titre: "🍋UE8 - 20/21 - Annales",
             description: "15 questions",
             sujet: "https://drive.google.com/file/d/1GEyPOkvbUJNordkGq6j_I8c_AsxvNPTT/view?usp=drivesdk",
             correction: "https://drive.google.com/file/d/11Q_yiEqIpoVYlAmcjXUL5IyZupVwHYrz/view?usp=drivesdk",
@@ -360,7 +496,9 @@
         {
             id: "ue8_2021_rtp",
             ue: "UE8",
-            titre: "🍋UE8 - 20/21 - Session 2 (RTP)",
+            annee: "20/21",
+            type: "annales",
+            titre: "🍋UE8 - 20/21 - Annales (RTP)",
             description: "15 questions",
             sujet: "https://drive.google.com/file/d/1yD6Bx7DEodYG5I3rkPDUhVFaDR3gep32/view?usp=drivesdk",
             correction: "https://drive.google.com/file/d/1XyevPoTPRDHoroY-7oZrh4cfDHfrbviC/view?usp=drivesdk",
@@ -375,7 +513,9 @@
         {
             id: "ue8_2022",
             ue: "UE8",
-            titre: "🍋UE8 - 21/22 - Session 1",
+            annee: "21/22",
+            type: "annales",
+            titre: "🍋UE8 - 21/22 - Annales",
             description: "15 questions",
             sujet: "https://drive.google.com/file/d/1rZNg2HF-c60yzstsLpSPdSkS8LCh_n46/view?usp=drivesdk",
             correction: "https://drive.google.com/file/d/1AI_3wzuLlHKev9zht8K5HLBvzQrmlLMe/view?usp=drivesdk",
@@ -390,7 +530,9 @@
         {
             id: "ue8_2022_rtp",
             ue: "UE8",
-            titre: "🍋UE8 - 21/22 - Session 2 (RTP)",
+            annee: "21/22",
+            type: "annales",
+            titre: "🍋UE8 - 21/22 - Annales (RTP)",
             description: "15 questions",
             sujet: "https://drive.google.com/file/d/1VfGjVWQZkCNVIRkjmG3cdb1UpQW4NS46/view?usp=drivesdk",
             correction: "https://drive.google.com/file/d/1ZZOKehLU6Z8FCVgLwvLcCgIm4IacyVIG/view?usp=drivesdk",
@@ -405,7 +547,9 @@
         {
             id: "ue8_2023",
             ue: "UE8",
-            titre: "🍋UE8 - 22/23 - Session 1",
+            annee: "22/23",
+            type: "annales",
+            titre: "🍋UE8 - 22/23 - Annales",
             description: "15 questions",
             sujet: "https://drive.google.com/file/d/15T9UrRIxGQGPMR8pdHFH4OcuWDwbqGb5/view?usp=drivesdk",
             correction: "https://drive.google.com/file/d/1JlgFj18dKQgjqATzSl24stwVCXwHMlf1/view?usp=drivesdk",
@@ -417,102 +561,60 @@
                 { id: "QCM 13", reponse: ["B","E"] }, { id: "QCM 14", reponse: ["B"] }, { id: "QCM 15", reponse: ["A","B"] }
             ]
         },
+
+        // ============ FAUSSES COLLES UE8 ============
         {
-            id: "ue8_2023_rtp",
+            id: "ue8_colle_2021",
             ue: "UE8",
-            titre: "🍋UE8 - 22/23 - Session 2 (RTP)",
-            description: "15 questions",
-            sujet: "https://drive.google.com/file/d/1o1jSs6KaVUpdEoR3xvX6jYI4OhSSFBPt/view?usp=drivesdk",
-            correction: "https://drive.google.com/file/d/1S0952KCoAKRIkV68KK_wZGXCdBlqm-r4/view?usp=drivesdk",
+            annee: "20/21",
+            type: "colle",
+            titre: "🍋UE8 - 20/21 - Colle",
+            description: "10 questions - Colle",
+            sujet: "https://drive.google.com/file/d/1BS1kI3WFx_0GddrSMYZ8W_shR-gzJsBd/view?usp=drivesdk",
+            correction: "https://drive.google.com/file/d/184e23gPAtNSR-Vgz20M3zDIghqTCa2Jj/view?usp=drivesdk",
             qcm: [
-                { id: "QCM 1", reponse: ["A","B"] }, { id: "QCM 2", reponse: ["B","D"] }, { id: "QCM 3", reponse: ["D","E"] },
-                { id: "QCM 4", reponse: ["A","D","E"] }, { id: "QCM 5", reponse: ["A","B","C","D"] }, { id: "QCM 6", reponse: ["A","C","D","E"] },
-                { id: "QCM 7", reponse: ["A","C"] }, { id: "QCM 8", reponse: ["B","D","E"] }, { id: "QCM 9", reponse: ["D"] },
-                { id: "QCM 10", reponse: ["A","D"] }, { id: "QCM 11", reponse: ["B","E"] }, { id: "QCM 12", reponse: ["B","C"] },
-                { id: "QCM 13", reponse: ["A","C","D","E"] }, { id: "QCM 14", reponse: ["C","D"] }, { id: "QCM 15", reponse: ["B","D","E"] }
-            ]
-        },
-        {
-            id: "ue8_2024",
-            ue: "UE8",
-            titre: "🍋UE8 - 23/24 - Session 1",
-            description: "15 questions",
-            sujet: "https://drive.google.com/file/d/1xu7x1oH-OqVp_a7ciafSzPYPKlwDEub0/view?usp=drivesdk",
-            correction: "https://drive.google.com/file/d/1Q8WoNwYGYl1kjeOg3RatAgAjGLlJpO0s/view?usp=drivesdk",
-            qcm: [
-                { id: "QCM 1", reponse: ["B","C"] }, { id: "QCM 2", reponse: ["A","E"] }, { id: "QCM 3", reponse: ["A","B"] },
-                { id: "QCM 4", reponse: ["B"] }, { id: "QCM 5", reponse: ["A","C","D","E"] }, { id: "QCM 6", reponse: ["A","E"] },
-                { id: "QCM 7", reponse: ["B","C","D"] }, { id: "QCM 8", reponse: ["C","D","E"] }, { id: "QCM 9", reponse: ["B","D","E"] },
-                { id: "QCM 10", reponse: ["B","C","D"] }, { id: "QCM 11", reponse: ["A","B","D"] }, { id: "QCM 12", reponse: ["A","C","E"] },
-                { id: "QCM 13", reponse: ["B","C","E"] }, { id: "QCM 14", reponse: ["A","D"] }, { id: "QCM 15", reponse: ["A","B","D","E"] }
-            ]
-        },
-        {
-            id: "ue8_2024_rtp",
-            ue: "UE8",
-            titre: "🍋UE8 - 23/24 - Session 2 (RTP)",
-            description: "15 questions",
-            sujet: "https://drive.google.com/file/d/1qc4wVYt3wscFk1wrUzKJyAu7ViNGMNpR/view?usp=drivesdk",
-            correction: "https://drive.google.com/file/d/1CeI0AqhG2aAt6j7Ekz-JF_Jpyy-w1aqJ/view?usp=drivesdk",
-            qcm: [
-                { id: "QCM 1", reponse: ["B"] }, { id: "QCM 2", reponse: ["D"] }, { id: "QCM 3", reponse: ["B","E"] },
-                { id: "QCM 4", reponse: ["B","C"] }, { id: "QCM 5", reponse: ["A","B"] }, { id: "QCM 6", reponse: ["A","B","D","E"] },
-                { id: "QCM 7", reponse: ["A","C"] }, { id: "QCM 8", reponse: ["A"] }, { id: "QCM 9", reponse: ["A","B","E"] },
-                { id: "QCM 10", reponse: ["B","C","D"] }, { id: "QCM 11", reponse: ["A","C","D"] }, { id: "QCM 12", reponse: ["A","B","D","E"] },
-                { id: "QCM 13", reponse: ["A","C","D"] }, { id: "QCM 14", reponse: ["A","B","D","E"] }, { id: "QCM 15", reponse: ["C","D","E"] }
-            ]
-        },
-        {
-            id: "ue8_2025",
-            ue: "UE8",
-            titre: "🍋UE8 - 24/25 - Session 1",
-            description: "15 questions",
-            sujet: "https://drive.google.com/file/d/1D8fwf6YhaB0dBZIqrsdwBzARoE4e8NRA/view?usp=drivesdk",
-            correction: "https://drive.google.com/file/d/14TYAu4996UUYdGVyTaa6TbxKrfF9KGZ1/view?usp=drivesdk",
-            qcm: [
-                { id: "QCM 1", reponse: ["B","E"] }, { id: "QCM 2", reponse: ["B","C","D"] }, { id: "QCM 3", reponse: ["B"] },
-                { id: "QCM 4", reponse: ["A","B","C","E"] }, { id: "QCM 5", reponse: ["C","D"] }, { id: "QCM 6", reponse: ["A","C"] },
-                { id: "QCM 7", reponse: ["B","C"] }, { id: "QCM 8", reponse: ["A","C"] }, { id: "QCM 9", reponse: ["E"] },
-                { id: "QCM 10", reponse: ["A","D","E"] }, { id: "QCM 11", reponse: ["C","E"] }, { id: "QCM 12", reponse: ["C"] },
-                { id: "QCM 13", reponse: ["B","C"] }, { id: "QCM 14", reponse: ["A","B","D"] }, { id: "QCM 15", reponse: ["B","C","D"] }
-            ]
-        },
-        {
-            id: "ue8_2025_rtp",
-            ue: "UE8",
-            titre: "🍋UE8 - 24/25 - Session 2 (RTP)",
-            description: "15 questions",
-            sujet: "https://drive.google.com/file/d/1zInfhVNh_7kTM4_zlXSs9w_Q9myF3O57/view?usp=drivesdk",
-            correction: "https://drive.google.com/file/d/1ZbSPmvDhLXwl4eZT63UuYAOHbas7yyFr/view?usp=drivesdk",
-            qcm: [
-                { id: "QCM 1", reponse: ["C","D","E"] }, { id: "QCM 2", reponse: ["C","E"] }, { id: "QCM 3", reponse: ["B","C","D","E"] },
-                { id: "QCM 4", reponse: ["B","E"] }, { id: "QCM 5", reponse: ["B","C","D","E"] }, { id: "QCM 6", reponse: ["A","B","C","E"] },
-                { id: "QCM 7", reponse: ["B","C","D"] }, { id: "QCM 8", reponse: ["A","D"] }, { id: "QCM 9", reponse: ["A","D","E"] },
-                { id: "QCM 10", reponse: ["A","D"] }, { id: "QCM 11", reponse: ["A","B","D"] }, { id: "QCM 12", reponse: ["D"] },
-                { id: "QCM 13", reponse: ["A","B","C"] }, { id: "QCM 14", reponse: ["A"] }, { id: "QCM 15", reponse: ["B","D","E"] }
-            ]
-        },
-        {
-            id: "ue8_2026",
-            ue: "UE8",
-            titre: "🍋UE8 - 25/26 - Session 1",
-            description: "15 questions",
-            sujet: "https://drive.google.com/file/d/1g-9C0iauRYPMrzzncHMMN52zx59_ZPQQ/view?usp=drivesdk",
-            correction: "https://drive.google.com/file/d/1RGPo1dc6btivuENOjCvd7YaTNOx5YHLo/view?usp=drivesdk",
-            qcm: [
-                { id: "QCM 1", reponse: ["B","C"] }, { id: "QCM 2", reponse: ["A","B","E"] }, { id: "QCM 3", reponse: ["A","B","C"] },
-                { id: "QCM 4", reponse: ["A","C","D","E"] }, { id: "QCM 5", reponse: ["A","B"] }, { id: "QCM 6", reponse: ["B","E"] },
-                { id: "QCM 7", reponse: ["B","C","D"] }, { id: "QCM 8", reponse: ["A","C"] }, { id: "QCM 9", reponse: ["A","C","E"] },
-                { id: "QCM 10", reponse: ["B","D"] }, { id: "QCM 11", reponse: ["A","D"] }, { id: "QCM 12", reponse: ["B","C","E"] },
-                { id: "QCM 13", reponse: ["B","C","E"] }, { id: "QCM 14", reponse: ["A","B"] }, { id: "QCM 15", reponse: ["B","C"] }
+                { id: "QCM 1", reponse: ["A", "D"] },
+                { id: "QCM 2", reponse: ["B", "C", "E"] },
+                { id: "QCM 3", reponse: ["A", "E"] },
+                { id: "QCM 4", reponse: ["C"] },
+                { id: "QCM 5", reponse: ["B", "D", "E"] },
+                { id: "QCM 6", reponse: ["A", "C"] },
+                { id: "QCM 7", reponse: ["D", "E"] },
+                { id: "QCM 8", reponse: ["B"] },
+                { id: "QCM 9", reponse: ["A", "B", "D"] },
+                { id: "QCM 10", reponse: ["C", "E"] }
             ]
         },
 
-        // ============ UE 11 ============
+        // ============ FAUSSES ED UE8 ============
+        {
+            id: "ue8_ed_2021",
+            ue: "UE8",
+            annee: "20/21",
+            type: "ed",
+            titre: "🍋UE8 - 20/21 - ED",
+            description: "8 questions - ED",
+            sujet: "https://drive.google.com/file/d/1BS1kI3WFx_0GddrSMYZ8W_shR-gzJsBd/view?usp=drivesdk",
+            correction: "https://drive.google.com/file/d/184e23gPAtNSR-Vgz20M3zDIghqTCa2Jj/view?usp=drivesdk",
+            qcm: [
+                { id: "QCM 1", reponse: ["A", "B", "D"] },
+                { id: "QCM 2", reponse: ["C", "E"] },
+                { id: "QCM 3", reponse: ["B", "D", "E"] },
+                { id: "QCM 4", reponse: ["A", "C"] },
+                { id: "QCM 5", reponse: ["D", "E"] },
+                { id: "QCM 6", reponse: ["A", "B", "E"] },
+                { id: "QCM 7", reponse: ["C", "D"] },
+                { id: "QCM 8", reponse: ["A", "E"] }
+            ]
+        },
+
+        // ============ UE11 ============
         {
             id: "ue11_2021",
             ue: "UE11",
-            titre: "🐁UE11 - 20/21 - Session 1",
+            annee: "20/21",
+            type: "annales",
+            titre: "🐁UE11 - 20/21 - Annales",
             description: "25 questions",
             sujet: "https://drive.google.com/file/d/1QeQGH5JQF8cK1ALwR-CInAo7NsuM-q9T/view?usp=drivesdk",
             correction: "https://drive.google.com/file/d/1ipyKNpRIla8TwLnRsNXMG_R-Vkg8e7TY/view?usp=drivesdk",
@@ -528,182 +630,40 @@
                 { id: "QCM 25", reponse: ["B","C","D"] }
             ]
         },
+
+        // ============ FAUSSE COLLE UE11 ============
         {
-            id: "ue11_2021_rtp",
+            id: "ue11_colle_2021",
             ue: "UE11",
-            titre: "🐁UE11 - 20/21 - Session 2 (RTP)",
-            description: "25 questions",
-            sujet: "https://drive.google.com/file/d/1FHt4mOw3cK1E3c0V22BK0lBQvNLpdcXX/view?usp=drivesdk",
-            correction: "https://drive.google.com/file/d/1rLqHASbJAY1efuR6z4Oh0loXZyXRTPNs/view?usp=drivesdk",
+            annee: "20/21",
+            type: "colle",
+            titre: "🐁UE11 - 20/21 - Colle",
+            description: "12 questions - Colle",
+            sujet: "https://drive.google.com/file/d/1BS1kI3WFx_0GddrSMYZ8W_shR-gzJsBd/view?usp=drivesdk",
+            correction: "https://drive.google.com/file/d/184e23gPAtNSR-Vgz20M3zDIghqTCa2Jj/view?usp=drivesdk",
             qcm: [
-                { id: "QCM 1", reponse: ["A","B","D"] }, { id: "QCM 2", reponse: ["B"] }, { id: "QCM 3", reponse: ["A","B","D"] },
-                { id: "QCM 4", reponse: ["B","D","E"] }, { id: "QCM 5", reponse: ["A","C","D"] }, { id: "QCM 6", reponse: ["B","E"] },
-                { id: "QCM 7", reponse: ["A","B","C"] }, { id: "QCM 8", reponse: ["B","C","D"] }, { id: "QCM 9", reponse: ["A","B","D","E"] },
-                { id: "QCM 10", reponse: ["A","D","E"] }, { id: "QCM 11", reponse: ["A","C","D"] }, { id: "QCM 12", reponse: ["B","D"] },
-                { id: "QCM 13", reponse: ["A","B","C","E"] }, { id: "QCM 14", reponse: ["B","D","E"] }, { id: "QCM 15", reponse: ["B","E"] },
-                { id: "QCM 16", reponse: ["D","E"] }, { id: "QCM 17", reponse: ["B","C","D","E"] }, { id: "QCM 18", reponse: ["B","C","D","E"] },
-                { id: "QCM 19", reponse: ["B","D"] }, { id: "QCM 20", reponse: ["B","D","E"] }, { id: "QCM 21", reponse: ["A","B","C","D","E"] },
-                { id: "QCM 22", reponse: ["A","C","E"] }, { id: "QCM 23", reponse: ["D","E"] }, { id: "QCM 24", reponse: ["A","D"] },
-                { id: "QCM 25", reponse: ["A","C","D"] }
-            ]
-        },
-        {
-            id: "ue11_2022",
-            ue: "UE11",
-            titre: "🐁UE11 - 21/22 - Session 1",
-            description: "25 questions",
-            sujet: "https://drive.google.com/file/d/1Su9TQ97eeuwtSL9RuXnBTwBppb3ZP3mq/view?usp=drivesdk",
-            correction: "https://drive.google.com/file/d/1SbzDN6kbFP-vnkjRZn8IGezmcB-361ca/view?usp=drivesdk",
-            qcm: [
-                { id: "QCM 1", reponse: ["A","C"] }, { id: "QCM 2", reponse: ["A","B","C"] }, { id: "QCM 3", reponse: ["A","B","D","E"] },
-                { id: "QCM 4", reponse: ["A","B","D"] }, { id: "QCM 5", reponse: ["A","C","D"] }, { id: "QCM 6", reponse: ["A","B","C","D"] },
-                { id: "QCM 7", reponse: ["A","B","C","E"] }, { id: "QCM 8", reponse: ["A","B"] }, { id: "QCM 9", reponse: ["B","C","D"] },
-                { id: "QCM 10", reponse: ["A","B","C"] }, { id: "QCM 11", reponse: ["B","C","D"] }, { id: "QCM 12", reponse: ["A","B","E"] },
-                { id: "QCM 13", reponse: ["B","E"] }, { id: "QCM 14", reponse: ["E"] }, { id: "QCM 15", reponse: ["A","B","C","E"] },
-                { id: "QCM 16", reponse: ["B","C","E"] }, { id: "QCM 17", reponse: ["B","C","D"] }, { id: "QCM 18", reponse: ["B","C"] },
-                { id: "QCM 19", reponse: ["B","C","E"] }, { id: "QCM 20", reponse: ["A","C","E"] }, { id: "QCM 21", reponse: ["B","C","D"] },
-                { id: "QCM 22", reponse: ["B","C","E"] }, { id: "QCM 23", reponse: ["A","B","C","D","E"] }, { id: "QCM 24", reponse: ["A","B","C","E"] },
-                { id: "QCM 25", reponse: ["A"] }
-            ]
-        },
-        {
-            id: "ue11_2022_rtp",
-            ue: "UE11",
-            titre: "🐁UE11 - 21/22 - Session 2 (RTP)",
-            description: "25 questions",
-            sujet: "https://drive.google.com/file/d/1LcqMQn7IJWWdjxRruuDO8rLDLaUFJAdn/view?usp=drivesdk",
-            correction: "https://drive.google.com/file/d/1ZBnzhMTSLS78Onv3rHyAI9GIl7hAgMtq/view?usp=drivesdk",
-            qcm: [
-                { id: "QCM 1", reponse: ["A","B","C","D"] }, { id: "QCM 2", reponse: ["C","D","E"] }, { id: "QCM 3", reponse: ["A","B","C","E"] },
-                { id: "QCM 4", reponse: ["B","D"] }, { id: "QCM 5", reponse: ["B","C"] }, { id: "QCM 6", reponse: ["D"] },
-                { id: "QCM 7", reponse: ["E"] }, { id: "QCM 8", reponse: ["A","C","D","E"] }, { id: "QCM 9", reponse: ["A","D","E"] },
-                { id: "QCM 10", reponse: ["A","B","C"] }, { id: "QCM 11", reponse: ["A","B","C","E"] }, { id: "QCM 12", reponse: ["B","E"] },
-                { id: "QCM 13", reponse: ["B","C","E"] }, { id: "QCM 14", reponse: ["A","B","C"] }, { id: "QCM 15", reponse: ["A","E"] },
-                { id: "QCM 16", reponse: ["B","E"] }, { id: "QCM 17", reponse: ["B","C"] }, { id: "QCM 18", reponse: ["A","B","C","D"] },
-                { id: "QCM 19", reponse: ["B","C","D","E"] }, { id: "QCM 20", reponse: ["A","B","E"] }, { id: "QCM 21", reponse: ["A","B","C"] },
-                { id: "QCM 22", reponse: ["A","B","D"] }, { id: "QCM 23", reponse: ["C","E"] }, { id: "QCM 24", reponse: ["A","C"] },
-                { id: "QCM 25", reponse: ["B","C","D","E"] }
-            ]
-        },
-        {
-            id: "ue11_2023",
-            ue: "UE11",
-            titre: "🐁UE11 - 22/23 - Session 1",
-            description: "25 questions",
-            sujet: "https://drive.google.com/file/d/10NIokkdloispKlItKNUf5PxS3r9VTJX2/view?usp=drivesdk",
-            correction: "https://drive.google.com/file/d/1M8YUZYoAcLFpq7CaJTAyNwxruTIv6T-7/view?usp=drivesdk",
-            qcm: [
-                { id: "QCM 1", reponse: ["B","C","E"] }, { id: "QCM 2", reponse: ["B","C"] }, { id: "QCM 3", reponse: ["B"] },
-                { id: "QCM 4", reponse: ["B","E"] }, { id: "QCM 5", reponse: ["A"] }, { id: "QCM 6", reponse: ["A","B","D","E"] },
-                { id: "QCM 7", reponse: ["C","D","E"] }, { id: "QCM 8", reponse: ["D","E"] }, { id: "QCM 9", reponse: ["A","E"] },
-                { id: "QCM 10", reponse: ["A","B","C","E"] }, { id: "QCM 11", reponse: ["C","D"] }, { id: "QCM 12", reponse: ["A","C","E"] },
-                { id: "QCM 13", reponse: ["B","C","E"] }, { id: "QCM 14", reponse: ["A","C","E"] }, { id: "QCM 15", reponse: ["A","D","E"] },
-                { id: "QCM 16", reponse: ["A","C","D","E"] }, { id: "QCM 17", reponse: ["A","B","E"] }, { id: "QCM 18", reponse: ["A","B","C"] },
-                { id: "QCM 19", reponse: ["B","C"] }, { id: "QCM 20", reponse: ["A","B","D","E"] }, { id: "QCM 21", reponse: ["B","C","D","E"] },
-                { id: "QCM 22", reponse: ["C","E"] }, { id: "QCM 23", reponse: ["A","B","C","E"] }, { id: "QCM 24", reponse: ["A","C","D","E"] },
-                { id: "QCM 25", reponse: ["A","B","C","D","E"] }
-            ]
-        },
-        {
-            id: "ue11_2023_rtp",
-            ue: "UE11",
-            titre: "🐁UE11 - 22/23 - Session 2 (RTP)",
-            description: "24 questions",
-            sujet: "https://drive.google.com/file/d/1i7mMdsF0G7KwNhYlBFU_aT5XRBysRkGp/view?usp=drivesdk",
-            correction: "https://drive.google.com/file/d/1LwBQJserjUuZ6TWBOSciOR_GcMsmsdhA/view?usp=drivesdk",
-            qcm: [
-                { id: "QCM 1", reponse: ["A","B"] }, { id: "QCM 2", reponse: ["A","B","D"] }, { id: "QCM 3", reponse: ["B","D"] },
-                { id: "QCM 4", reponse: ["B","E"] }, { id: "QCM 5", reponse: ["B","C"] }, { id: "QCM 6", reponse: ["A","B","D"] },
-                { id: "QCM 7", reponse: ["A","B","C","E"] }, { id: "QCM 8", reponse: ["A","C","E"] }, { id: "QCM 9", reponse: ["A","B","C","E"] },
-                { id: "QCM 10", reponse: ["A","B","E"] }, { id: "QCM 11", reponse: ["D","E"] }, { id: "QCM 12", reponse: ["B","D"] },
-                { id: "QCM 13", reponse: ["A","E"] }, { id: "QCM 14", reponse: ["A","C","D","E"] }, { id: "QCM 15", reponse: ["A","B","C","D","E"] },
-                { id: "QCM 16", reponse: ["D","E"] }, { id: "QCM 17", reponse: ["B","C","D","E"] }, { id: "QCM 18", reponse: ["A","B","C"] },
-                { id: "QCM 19", reponse: ["B","C","D"] }, { id: "QCM 20", reponse: ["A","B","C"] }, { id: "QCM 21", reponse: ["C","D"] },
-                { id: "QCM 22", reponse: ["A","D","E"] }, { id: "QCM 23", reponse: ["B","C","D","E"] }, { id: "QCM 24", reponse: ["A","C","D"] }
-            ]
-        },
-        {
-            id: "ue11_2024",
-            ue: "UE11",
-            titre: "🐁UE11 - 23/24 - Session 1",
-            description: "25 questions",
-            sujet: "https://drive.google.com/file/d/1Kh1753XCyoZPvcMb_2tyMNEwjp1WhGKt/view?usp=drivesdk",
-            correction: "https://drive.google.com/file/d/14QGWIzWKkqhBaeRpdl-VuyVvf2jLXkX2/view?usp=drivesdk",
-            qcm: [
-                { id: "QCM 1", reponse: ["B","C","D"] }, { id: "QCM 2", reponse: ["A","B"] }, { id: "QCM 3", reponse: ["A","B","E"] },
-                { id: "QCM 4", reponse: ["A","B","D","E"] }, { id: "QCM 5", reponse: ["B","C","D"] }, { id: "QCM 6", reponse: ["A","B","C","D","E"] },
-                { id: "QCM 7", reponse: ["A","D"] }, { id: "QCM 8", reponse: ["B","E"] }, { id: "QCM 9", reponse: ["A","B","C","D"] },
-                { id: "QCM 10", reponse: ["A","C"] }, { id: "QCM 11", reponse: ["A","C","E"] }, { id: "QCM 12", reponse: ["A","C","E"] },
-                { id: "QCM 13", reponse: ["A","C","D","E"] }, { id: "QCM 14", reponse: ["C","E"] }, { id: "QCM 15", reponse: ["A","B","C","D","E"] },
-                { id: "QCM 16", reponse: ["B","C","E"] }, { id: "QCM 17", reponse: ["A","B","E"] }, { id: "QCM 18", reponse: ["B","C","E"] },
-                { id: "QCM 19", reponse: ["A","C","D","E"] }, { id: "QCM 20", reponse: ["B","C","D","E"] }, { id: "QCM 21", reponse: ["A","B","D"] },
-                { id: "QCM 22", reponse: ["A","C","D","E"] }, { id: "QCM 23", reponse: ["A","D","E"] }, { id: "QCM 24", reponse: ["A","B","C","E"] },
-                { id: "QCM 25", reponse: ["A","C","D"] }
-            ]
-        },
-        {
-            id: "ue11_2024_rtp",
-            ue: "UE11",
-            titre: "🐁UE11 - 23/24 - Session 2 (RTP)",
-            description: "25 questions",
-            sujet: "https://drive.google.com/file/d/1v68P-ADrikUpLvmALEvnjfqDYAJ3NfrV/view?usp=drivesdk",
-            correction: "https://drive.google.com/file/d/1JEhSVHs4AmgDqssNkBOHtSanAF3neps3/view?usp=drivesdk",
-            qcm: [
-                { id: "QCM 1", reponse: ["A","B","C","E"] }, { id: "QCM 2", reponse: ["A","B","E"] }, { id: "QCM 3", reponse: ["A","C","D"] },
-                { id: "QCM 4", reponse: ["A","C","D","E"] }, { id: "QCM 5", reponse: ["A","B","C","D"] }, { id: "QCM 6", reponse: ["B"] },
-                { id: "QCM 7", reponse: ["A","D","E"] }, { id: "QCM 8", reponse: ["B","C","D"] }, { id: "QCM 9", reponse: ["A","D"] },
-                { id: "QCM 10", reponse: ["A","B","E"] }, { id: "QCM 11", reponse: ["A","B","C","E"] }, { id: "QCM 12", reponse: ["A","C","D","E"] },
-                { id: "QCM 13", reponse: ["E"] }, { id: "QCM 14", reponse: ["B","D"] }, { id: "QCM 15", reponse: ["B","C","D"] },
-                { id: "QCM 16", reponse: ["A","B"] }, { id: "QCM 17", reponse: ["B","D","E"] }, { id: "QCM 18", reponse: ["A","B","E"] },
-                { id: "QCM 19", reponse: ["A","B","C","D","E"] }, { id: "QCM 20", reponse: ["A","B","C","D","E"] }, { id: "QCM 21", reponse: ["A","B","C"] },
-                { id: "QCM 22", reponse: ["A","C","D","E"] }, { id: "QCM 23", reponse: ["A","B","E"] }, { id: "QCM 24", reponse: ["A","B","C","E"] },
-                { id: "QCM 25", reponse: ["A","B","C","D","E"] }
-            ]
-        },
-        {
-            id: "ue11_2025",
-            ue: "UE11",
-            titre: "🐁UE11 - 24/25 - Session 1",
-            description: "25 questions",
-            sujet: "https://drive.google.com/file/d/11g8CL_301sBGA8YaNO7sOrfvgi4FRvEa/view?usp=drivesdk",
-            correction: "https://drive.google.com/file/d/1O_vj-sOmjX1bLH3T2H0HFE5ghKs83_Tq/view?usp=drivesdk",
-            qcm: [
-                { id: "QCM 1", reponse: ["A","B","C","D"] }, { id: "QCM 2", reponse: ["B","D","E"] }, { id: "QCM 3", reponse: ["A","B","D"] },
-                { id: "QCM 4", reponse: ["A"] }, { id: "QCM 5", reponse: ["A","B","D","E"] }, { id: "QCM 6", reponse: ["A","B","C","D"] },
-                { id: "QCM 7", reponse: ["D"] }, { id: "QCM 8", reponse: ["A","D"] }, { id: "QCM 9", reponse: ["A","B","C"] },
-                { id: "QCM 10", reponse: ["B","C","E"] }, { id: "QCM 11", reponse: ["A","C","D"] }, { id: "QCM 12", reponse: ["A","C"] },
-                { id: "QCM 13", reponse: ["C","D","E"] }, { id: "QCM 14", reponse: ["A","C","D"] }, { id: "QCM 15", reponse: ["A","C","D","E"] },
-                { id: "QCM 16", reponse: ["A","B"] }, { id: "QCM 17", reponse: ["A","B","C","D"] }, { id: "QCM 18", reponse: ["A","B","D","E"] },
-                { id: "QCM 19", reponse: ["A","B","C","E"] }, { id: "QCM 20", reponse: ["C","D"] }, { id: "QCM 21", reponse: ["A","B","D"] },
-                { id: "QCM 22", reponse: ["A","C","E"] }, { id: "QCM 23", reponse: ["A","B","D"] }, { id: "QCM 24", reponse: ["A","B"] },
-                { id: "QCM 25", reponse: ["A","D"] }
-            ]
-        },
-        {
-            id: "ue11_2025_rtp",
-            ue: "UE11",
-            titre: "🐁UE11 - 24/25 - Session 2 (RTP)",
-            description: "27 questions",
-            sujet: "https://drive.google.com/file/d/1OPbaxi1ndL2aJvPO-tEdH0TaVHXhFFEe/view?usp=drivesdk",
-            correction: "https://drive.google.com/file/d/1bb8wkp6iRhWg_7D3fgNJ292-YqOEUKfS/view?usp=drivesdk",
-            qcm: [
-                { id: "QCM 1", reponse: ["B","C","E"] }, { id: "QCM 2", reponse: ["D","E"] }, { id: "QCM 3", reponse: ["A","B","C","E"] },
-                { id: "QCM 4", reponse: ["A","B","D"] }, { id: "QCM 5", reponse: ["A","B","D"] }, { id: "QCM 6", reponse: ["A","B","C"] },
-                { id: "QCM 7", reponse: ["A","E"] }, { id: "QCM 8", reponse: ["C","D"] }, { id: "QCM 9", reponse: ["D"] },
-                { id: "QCM 10", reponse: ["B","C","E"] }, { id: "QCM 11", reponse: ["C","D","E"] }, { id: "QCM 12", reponse: ["A","C","D","E"] },
-                { id: "QCM 13", reponse: ["A","C"] }, { id: "QCM 14", reponse: ["A","B","D","E"] }, { id: "QCM 15", reponse: ["C","E"] },
-                { id: "QCM 16", reponse: ["A","D","E"] }, { id: "QCM 17", reponse: ["A","B","C","D","E"] }, { id: "QCM 18", reponse: ["A","C","E"] },
-                { id: "QCM 19", reponse: ["A","B","C"] }, { id: "QCM 20", reponse: ["A","B","C","D","E"] }, { id: "QCM 21", reponse: ["A","B","E"] },
-                { id: "QCM 22", reponse: ["A","D","E"] }, { id: "QCM 23", reponse: ["A","C","D","E"] }, { id: "QCM 24", reponse: ["B"] },
-                { id: "QCM 25", reponse: ["A","C","D","E"] }, { id: "QCM 26", reponse: ["A","B","E"] }, { id: "QCM 27", reponse: ["A","B","D"] }
+                { id: "QCM 1", reponse: ["A", "D", "E"] },
+                { id: "QCM 2", reponse: ["B", "C"] },
+                { id: "QCM 3", reponse: ["A", "E"] },
+                { id: "QCM 4", reponse: ["C", "D", "E"] },
+                { id: "QCM 5", reponse: ["B", "D"] },
+                { id: "QCM 6", reponse: ["A", "B", "C", "E"] },
+                { id: "QCM 7", reponse: ["D", "E"] },
+                { id: "QCM 8", reponse: ["A", "C"] },
+                { id: "QCM 9", reponse: ["B", "E"] },
+                { id: "QCM 10", reponse: ["A", "D"] },
+                { id: "QCM 11", reponse: ["C", "E"] },
+                { id: "QCM 12", reponse: ["A", "B", "D"] }
             ]
         },
 
-        // ============ UE 16 ============
+        // ============ UE16 ============
         {
             id: "ue16_2021",
             ue: "UE16",
-            titre: "🦩UE16 - 20/21 - Session 1",
+            annee: "20/21",
+            type: "annales",
+            titre: "🦩UE16 - 20/21 - Annales",
             description: "16 questions",
             sujet: "https://drive.google.com/file/d/1rFCZfP42ovigLGdl4qAp2fXJYc0aPcm0/view?usp=drivesdk",
             correction: "https://drive.google.com/file/d/1rFCZfP42ovigLGdl4qAp2fXJYc0aPcm0/view?usp=drivesdk",
@@ -716,140 +676,36 @@
                 { id: "QCM 16", reponse: ["A","B"] }
             ]
         },
+
+        // ============ FAUSSE ED UE16 ============
         {
-            id: "ue16_2022",
+            id: "ue16_ed_2021",
             ue: "UE16",
-            titre: "🦩UE16 - 21/22 - Session 1",
-            description: "16 questions",
-            sujet: "https://drive.google.com/file/d/1Nf5eYPAfY9r1zpSeqc0cqXZ3kROO0X1h/view?usp=drivesdk",
-            correction: "https://drive.google.com/file/d/1Nf5eYPAfY9r1zpSeqc0cqXZ3kROO0X1h/view?usp=drivesdk",
+            annee: "20/21",
+            type: "ed",
+            titre: "🦩UE16 - 20/21 - ED",
+            description: "8 questions - ED",
+            sujet: "https://drive.google.com/file/d/1BS1kI3WFx_0GddrSMYZ8W_shR-gzJsBd/view?usp=drivesdk",
+            correction: "https://drive.google.com/file/d/184e23gPAtNSR-Vgz20M3zDIghqTCa2Jj/view?usp=drivesdk",
             qcm: [
-                { id: "QCM 1", reponse: ["C","D","E"] }, { id: "QCM 2", reponse: ["A","C","E"] }, { id: "QCM 3", reponse: ["A","B"] },
-                { id: "QCM 4", reponse: ["C","D"] }, { id: "QCM 5", reponse: ["A","D","E"] }, { id: "QCM 6", reponse: ["B","C","E"] },
-                { id: "QCM 7", reponse: ["A","C","D"] }, { id: "QCM 8", reponse: ["A","D","E"] }, { id: "QCM 9", reponse: ["A","C","D","E"] },
-                { id: "QCM 10", reponse: ["B","C","D","E"] }, { id: "QCM 11", reponse: ["B","C","D"] }, { id: "QCM 12", reponse: ["A","B","D","E"] },
-                { id: "QCM 13", reponse: ["C","D","E"] }, { id: "QCM 14", reponse: ["A","B","C"] }, { id: "QCM 15", reponse: ["B","C","E"] },
-                { id: "QCM 16", reponse: ["A","C","E"] }
-            ]
-        },
-        {
-            id: "ue16_2022_rtp",
-            ue: "UE16",
-            titre: "🦩UE16 - 21/22 - Session 2 (RTP)",
-            description: "16 questions",
-            sujet: "https://drive.google.com/file/d/1QRt0NYTsooeOLAfwHKYWs3cthdn1jFm0/view?usp=drivesdk",
-            correction: "https://drive.google.com/file/d/1QRt0NYTsooeOLAfwHKYWs3cthdn1jFm0/view?usp=drivesdk",
-            qcm: [
-                { id: "QCM 1", reponse: ["A","C","D"] }, { id: "QCM 2", reponse: ["A","D"] }, { id: "QCM 3", reponse: ["B","E"] },
-                { id: "QCM 4", reponse: ["B","C","E"] }, { id: "QCM 5", reponse: ["D","E"] }, { id: "QCM 6", reponse: ["A","C"] },
-                { id: "QCM 7", reponse: ["C","D","E"] }, { id: "QCM 8", reponse: ["B","C","D"] }, { id: "QCM 9", reponse: ["A","C","D"] },
-                { id: "QCM 10", reponse: ["A","B","D"] }, { id: "QCM 11", reponse: ["B","E"] }, { id: "QCM 12", reponse: ["A","D"] },
-                { id: "QCM 13", reponse: ["A","C","D"] }, { id: "QCM 14", reponse: ["A","B","D"] }, { id: "QCM 15", reponse: ["B","C"] },
-                { id: "QCM 16", reponse: ["B","C","E"] }
-            ]
-        },
-        {
-            id: "ue16_2023",
-            ue: "UE16",
-            titre: "🦩UE16 - 22/23 - Session 1",
-            description: "16 questions",
-            sujet: "https://drive.google.com/file/d/1-yxlKWGnVgZPHr8sxr_k-2PjCFu718j3/view?usp=drivesdk",
-            correction: "https://drive.google.com/file/d/1-yxlKWGnVgZPHr8sxr_k-2PjCFu718j3/view?usp=drivesdk",
-            qcm: [
-                { id: "QCM 1", reponse: ["A","B","E"] }, { id: "QCM 2", reponse: ["C","D","E"] }, { id: "QCM 3", reponse: ["A","D","E"] },
-                { id: "QCM 4", reponse: ["A","D","E"] }, { id: "QCM 5", reponse: ["A","B","D","E"] }, { id: "QCM 6", reponse: ["A","B","D","E"] },
-                { id: "QCM 7", reponse: ["B","C","D"] }, { id: "QCM 8", reponse: ["A","C","E"] }, { id: "QCM 9", reponse: ["A","B","C","D","E"] },
-                { id: "QCM 10", reponse: ["B","C"] }, { id: "QCM 11", reponse: ["B","C","D","E"] }, { id: "QCM 12", reponse: ["A","B","D","E"] },
-                { id: "QCM 13", reponse: ["A","D","E"] }, { id: "QCM 14", reponse: ["A","C","E"] }, { id: "QCM 15", reponse: ["B","C","D","E"] },
-                { id: "QCM 16", reponse: ["B","D","E"] }
-            ]
-        },
-        {
-            id: "ue16_2023_rtp",
-            ue: "UE16",
-            titre: "🦩UE16 - 22/23 - Session 2 (RTP)",
-            description: "16 questions",
-            sujet: "https://drive.google.com/file/d/1TRRqcORZi41qsLzencekStP1gYgUrD97/view?usp=drivesdk",
-            correction: "https://drive.google.com/file/d/1TRRqcORZi41qsLzencekStP1gYgUrD97/view?usp=drivesdk",
-            qcm: [
-                { id: "QCM 1", reponse: ["A","C"] }, { id: "QCM 2", reponse: ["A","B","E"] }, { id: "QCM 3", reponse: ["A","E"] },
-                { id: "QCM 4", reponse: ["A","B","C"] }, { id: "QCM 5", reponse: ["A","D","E"] }, { id: "QCM 6", reponse: ["C","E"] },
-                { id: "QCM 7", reponse: ["A","C","D","E"] }, { id: "QCM 8", reponse: ["A","C","D"] }, { id: "QCM 9", reponse: ["C","D"] },
-                { id: "QCM 10", reponse: ["A","C","E"] }, { id: "QCM 11", reponse: ["B","C","E"] }, { id: "QCM 12", reponse: ["A","C"] },
-                { id: "QCM 13", reponse: ["A","C","D"] }, { id: "QCM 14", reponse: ["A","C"] }, { id: "QCM 15", reponse: ["A","C"] },
-                { id: "QCM 16", reponse: ["A","B","C","D","E"] }
-            ]
-        },
-        {
-            id: "ue16_2024",
-            ue: "UE16",
-            titre: "🦩UE16 - 23/24 - Session 1",
-            description: "16 questions",
-            sujet: "https://drive.google.com/file/d/1bG6YY1Z0zNWxLZaQz_kdcTuX1fxPtdid/view?usp=drivesdk",
-            correction: "https://drive.google.com/file/d/1bG6YY1Z0zNWxLZaQz_kdcTuX1fxPtdid/view?usp=drivesdk",
-            qcm: [
-                { id: "QCM 1", reponse: ["B","C"] }, { id: "QCM 2", reponse: ["B","D"] }, { id: "QCM 3", reponse: ["A","B","C"] },
-                { id: "QCM 4", reponse: ["A","D"] }, { id: "QCM 5", reponse: ["C","D","E"] }, { id: "QCM 6", reponse: ["A","C","E"] },
-                { id: "QCM 7", reponse: ["B","C","D","E"] }, { id: "QCM 8", reponse: ["B","C","D","E"] }, { id: "QCM 9", reponse: ["A","C","D","E"] },
-                { id: "QCM 10", reponse: ["B","C","D","E"] }, { id: "QCM 11", reponse: ["A","B","D","E"] }, { id: "QCM 12", reponse: ["A","C","D"] },
-                { id: "QCM 13", reponse: ["E"] }, { id: "QCM 14", reponse: ["A","B","C","D"] }, { id: "QCM 15", reponse: ["A","B","C","E"] },
-                { id: "QCM 16", reponse: ["A","B","D","E"] }
-            ]
-        },
-        {
-            id: "ue16_2024_rtp",
-            ue: "UE16",
-            titre: "🦩UE16 - 23/24 - Session 2 (RTP)",
-            description: "16 questions",
-            sujet: "https://drive.google.com/file/d/1y03sk7YxMSBH2yB99DdpewVL_u2j97sY/view?usp=drivesdk",
-            correction: "https://drive.google.com/file/d/1y03sk7YxMSBH2yB99DdpewVL_u2j97sY/view?usp=drivesdk",
-            qcm: [
-                { id: "QCM 1", reponse: ["C","D"] }, { id: "QCM 2", reponse: ["A","D"] }, { id: "QCM 3", reponse: ["A","B"] },
-                { id: "QCM 4", reponse: ["B","C"] }, { id: "QCM 5", reponse: ["B","C","E"] }, { id: "QCM 6", reponse: ["A","B"] },
-                { id: "QCM 7", reponse: ["A","B","C","E"] }, { id: "QCM 8", reponse: ["A","B","C"] }, { id: "QCM 9", reponse: ["A","B","C","E"] },
-                { id: "QCM 10", reponse: ["A","B","D"] }, { id: "QCM 11", reponse: ["B","D","E"] }, { id: "QCM 12", reponse: ["A"] },
-                { id: "QCM 13", reponse: ["B","C","D","E"] }, { id: "QCM 14", reponse: ["B","D"] }, { id: "QCM 15", reponse: ["A","D","E"] },
-                { id: "QCM 16", reponse: ["C","E"] }
-            ]
-        },
-        {
-            id: "ue16_2025",
-            ue: "UE16",
-            titre: "🦩UE16 - 24/25 - Session 1",
-            description: "16 questions",
-            sujet: "https://drive.google.com/file/d/1w3tG9sT_jbDAXBok67G3L9N4nJuKdwTJ/view?usp=drivesdk",
-            correction: "https://drive.google.com/file/d/1w3tG9sT_jbDAXBok67G3L9N4nJuKdwTJ/view?usp=drivesdk",
-            qcm: [
-                { id: "QCM 1", reponse: ["A","C","E"] }, { id: "QCM 2", reponse: ["B","E"] }, { id: "QCM 3", reponse: ["A","D"] },
-                { id: "QCM 4", reponse: ["A","D","E"] }, { id: "QCM 5", reponse: ["B","C","D"] }, { id: "QCM 6", reponse: ["C","E"] },
-                { id: "QCM 7", reponse: ["A","B","C"] }, { id: "QCM 8", reponse: ["A","C","D"] }, { id: "QCM 9", reponse: ["A","B"] },
-                { id: "QCM 10", reponse: ["B","D","E"] }, { id: "QCM 11", reponse: ["A","B","D","E"] }, { id: "QCM 12", reponse: ["A","C"] },
-                { id: "QCM 13", reponse: ["C","D"] }, { id: "QCM 14", reponse: ["A","D","E"] }, { id: "QCM 15", reponse: ["A","B","D","E"] },
-                { id: "QCM 16", reponse: ["A","E"] }
-            ]
-        },
-        {
-            id: "ue16_2026",
-            ue: "UE16",
-            titre: "🦩UE16 - 25/26 - Session 1",
-            description: "16 questions",
-            sujet: "https://drive.google.com/file/d/1ZLXogmeePvyI4xHxH9QWPiRYEnqPQSD2/view?usp=drivesdk",
-            correction: "https://drive.google.com/file/d/1ZLXogmeePvyI4xHxH9QWPiRYEnqPQSD2/view?usp=drivesdk",
-            qcm: [
-                { id: "QCM 1", reponse: ["C","E"] }, { id: "QCM 2", reponse: ["A","B","E"] }, { id: "QCM 3", reponse: ["A","B"] },
-                { id: "QCM 4", reponse: ["C","E"] }, { id: "QCM 5", reponse: ["B","C","D"] }, { id: "QCM 6", reponse: ["A","C","E"] },
-                { id: "QCM 7", reponse: ["B","E"] }, { id: "QCM 8", reponse: ["A","B","D","E"] }, { id: "QCM 9", reponse: ["B","D"] },
-                { id: "QCM 10", reponse: ["B","C","E"] }, { id: "QCM 11", reponse: ["A","B","C","E"] }, { id: "QCM 12", reponse: ["B","C","D"] },
-                { id: "QCM 13", reponse: ["A","D","E"] }, { id: "QCM 14", reponse: ["A","B","D","E"] }, { id: "QCM 15", reponse: ["B","E"] },
-                { id: "QCM 16", reponse: ["A","B","C","E"] }
+                { id: "QCM 1", reponse: ["A", "B", "C"] },
+                { id: "QCM 2", reponse: ["D", "E"] },
+                { id: "QCM 3", reponse: ["A", "D", "E"] },
+                { id: "QCM 4", reponse: ["B", "C"] },
+                { id: "QCM 5", reponse: ["A", "E"] },
+                { id: "QCM 6", reponse: ["B", "D", "E"] },
+                { id: "QCM 7", reponse: ["A", "C", "D"] },
+                { id: "QCM 8", reponse: ["B", "E"] }
             ]
         },
 
-        // ============ UE 21 ============
+        // ============ UE21 ============
         {
             id: "ue21_2021",
             ue: "UE21",
-            titre: "🥕UE21 - 20/21 - Session 1",
+            annee: "20/21",
+            type: "annales",
+            titre: "🥕UE21 - 20/21 - Annales",
             description: "25 questions",
             sujet: "https://drive.google.com/file/d/1jDGk2C02sWHssCh0BNTLM1ElGHy31wZU/view?usp=drivesdk",
             correction: "https://drive.google.com/file/d/1DSEXoSlwHTJqlfJOB_lIZpJP04wF_Uoz/view?usp=drivesdk",
@@ -865,136 +721,101 @@
                 { id: "QCM 25", reponse: ["C","D","E"] }
             ]
         },
+
+        // ============ FAUSSE ED UE21 ============
         {
-            id: "ue21_2021_rtp",
+            id: "ue21_ed_2021",
             ue: "UE21",
-            titre: "🥕UE21 - 20/21 - Session 2 (RTP)",
-            description: "20 questions",
-            sujet: "https://drive.google.com/file/d/12OxFzMLXrmDtlKVfUWYV_rsxQcZdPAL5/view?usp=drivesdk",
-            correction: "https://drive.google.com/file/d/1L-SfQ3uRS8_0fNMvGA7kCxVlq87pam-m/view?usp=drivesdk",
+            annee: "20/21",
+            type: "ed",
+            titre: "🥕UE21 - 20/21 - ED",
+            description: "10 questions - ED",
+            sujet: "https://drive.google.com/file/d/1BS1kI3WFx_0GddrSMYZ8W_shR-gzJsBd/view?usp=drivesdk",
+            correction: "https://drive.google.com/file/d/184e23gPAtNSR-Vgz20M3zDIghqTCa2Jj/view?usp=drivesdk",
             qcm: [
-                { id: "QCM 1", reponse: ["A","C"] }, { id: "QCM 2", reponse: ["B","D","E"] }, { id: "QCM 3", reponse: ["A","B","E"] },
-                { id: "QCM 4", reponse: ["B","C","D","E"] }, { id: "QCM 5", reponse: ["A","B","D","E"] }, { id: "QCM 6", reponse: ["A","E"] },
-                { id: "QCM 7", reponse: ["A","C","E"] }, { id: "QCM 8", reponse: ["C","D","E"] }, { id: "QCM 9", reponse: ["A","C","E"] },
-                { id: "QCM 10", reponse: ["B","C","D","E"] }, { id: "QCM 11", reponse: ["A","B","C"] }, { id: "QCM 12", reponse: ["A","C","D"] },
-                { id: "QCM 13", reponse: ["A","C"] }, { id: "QCM 14", reponse: ["A","D","E"] }, { id: "QCM 15", reponse: ["A","C","D"] },
-                { id: "QCM 16", reponse: ["A","C","D","E"] }, { id: "QCM 17", reponse: ["A","B","D","E"] }, { id: "QCM 18", reponse: ["A","D","E"] },
-                { id: "QCM 19", reponse: ["B","E"] }, { id: "QCM 20", reponse: ["A","D"] }
-            ]
-        },
-        {
-            id: "ue21_2022",
-            ue: "UE21",
-            titre: "🥕UE21 - 21/22 - Session 1",
-            description: "25 questions",
-            sujet: "https://drive.google.com/file/d/14EFW2NwhcJNjP4VHmHmI6B5Heg4V_JRy/view?usp=drivesdk",
-            correction: "https://drive.google.com/file/d/1u9vGmiEgMchD_cVJTxJgTlbmvzLwLHBT/view?usp=drivesdk",
-            qcm: [
-                { id: "QCM 1", reponse: ["A","D","E"] }, { id: "QCM 2", reponse: ["B","C","D","E"] }, { id: "QCM 3", reponse: ["B","D","E"] },
-                { id: "QCM 4", reponse: ["B","D","E"] }, { id: "QCM 5", reponse: ["A","C","D"] }, { id: "QCM 6", reponse: ["A","B","C"] },
-                { id: "QCM 7", reponse: ["A","C","D","E"] }, { id: "QCM 8", reponse: ["A","C","D"] }, { id: "QCM 9", reponse: ["A","C","D"] },
-                { id: "QCM 10", reponse: ["A","D","E"] }, { id: "QCM 11", reponse: ["A","B","D"] }, { id: "QCM 12", reponse: ["A","E"] },
-                { id: "QCM 13", reponse: ["A","B","E"] }, { id: "QCM 14", reponse: ["A","D","E"] }, { id: "QCM 15", reponse: ["B","C","D","E"] },
-                { id: "QCM 16", reponse: ["A","B","E"] }, { id: "QCM 17", reponse: ["A","C","D","E"] }, { id: "QCM 18", reponse: ["A","B","E"] },
-                { id: "QCM 19", reponse: ["A","C","D","E"] }, { id: "QCM 20", reponse: ["A","B","E"] }, { id: "QCM 21", reponse: ["A","B","C","D","E"] },
-                { id: "QCM 22", reponse: ["C","D"] }, { id: "QCM 23", reponse: ["A","C","D"] }, { id: "QCM 24", reponse: ["C","D","E"] },
-                { id: "QCM 25", reponse: ["A","B","C"] }
-            ]
-        },
-        {
-            id: "ue21_2023",
-            ue: "UE21",
-            titre: "🥕UE21 - 22/23 - Session 1",
-            description: "25 questions",
-            sujet: "https://drive.google.com/file/d/1SvurF-hp1iGjzCo_UeZMLzvsWnRdoK_t/view?usp=drivesdk",
-            correction: "https://drive.google.com/file/d/14g-cQG55hK0xcZnwFNRKxottawdPDTym/view?usp=drivesdk",
-            qcm: [
-                { id: "QCM 1", reponse: ["A","B","D"] }, { id: "QCM 2", reponse: ["C","D"] }, { id: "QCM 3", reponse: ["B","C","D"] },
-                { id: "QCM 4", reponse: ["A","B","C"] }, { id: "QCM 5", reponse: ["A","D"] }, { id: "QCM 6", reponse: ["A","C","D"] },
-                { id: "QCM 7", reponse: ["A","C"] }, { id: "QCM 8", reponse: ["A","B","D"] }, { id: "QCM 9", reponse: ["A","E"] },
-                { id: "QCM 10", reponse: ["A","B"] }, { id: "QCM 11", reponse: ["A","C","D","E"] }, { id: "QCM 12", reponse: ["B","C"] },
-                { id: "QCM 13", reponse: ["A","B","C"] }, { id: "QCM 14", reponse: ["A","C"] }, { id: "QCM 15", reponse: ["A","D","E"] },
-                { id: "QCM 16", reponse: ["A","B","C","E"] }, { id: "QCM 17", reponse: ["B","C","D","E"] }, { id: "QCM 18", reponse: ["A","C","D","E"] },
-                { id: "QCM 19", reponse: ["A","C","D"] }, { id: "QCM 20", reponse: ["A","B"] }, { id: "QCM 21", reponse: ["A","C","E"] },
-                { id: "QCM 22", reponse: ["C","D"] }, { id: "QCM 23", reponse: ["A","C","D"] }, { id: "QCM 24", reponse: ["A","E"] },
-                { id: "QCM 25", reponse: ["B"] }
-            ]
-        },
-        {
-            id: "ue21_2024",
-            ue: "UE21",
-            titre: "🥕UE21 - 23/24 - Session 1",
-            description: "25 questions",
-            sujet: "https://drive.google.com/file/d/1IHStq5t2Vc7WGy4l3du_ME_iILf2BavB/view?usp=drivesdk",
-            correction: "https://drive.google.com/file/d/1dI-zEDQZsJDZFVf7p-LMhvwSDVwJ8TXp/view?usp=drivesdk",
-            qcm: [
-                { id: "QCM 1", reponse: ["A","C","D"] }, { id: "QCM 2", reponse: ["A","C","E"] }, { id: "QCM 3", reponse: ["B","C","E"] },
-                { id: "QCM 4", reponse: ["A","B","D"] }, { id: "QCM 5", reponse: ["A","B","D"] }, { id: "QCM 6", reponse: ["A","C","D"] },
-                { id: "QCM 7", reponse: ["B"] }, { id: "QCM 8", reponse: ["B","C","D"] }, { id: "QCM 9", reponse: ["A","C","E"] },
-                { id: "QCM 10", reponse: ["A","D","E"] }, { id: "QCM 11", reponse: ["B","D","E"] }, { id: "QCM 12", reponse: ["A","D","E"] },
-                { id: "QCM 13", reponse: ["A","C","D"] }, { id: "QCM 14", reponse: ["A","B"] }, { id: "QCM 15", reponse: ["A","B","E"] },
-                { id: "QCM 16", reponse: ["D"] }, { id: "QCM 17", reponse: ["B"] }, { id: "QCM 18", reponse: ["A","E"] },
-                { id: "QCM 19", reponse: ["B"] }, { id: "QCM 20", reponse: ["A","B","D","E"] }, { id: "QCM 21", reponse: ["A","B","C","D"] },
-                { id: "QCM 22", reponse: ["A","E"] }, { id: "QCM 23", reponse: ["A","D","E"] }, { id: "QCM 24", reponse: ["A","B","C","D","E"] },
-                { id: "QCM 25", reponse: ["B","C","E"] }
-            ]
-        },
-        {
-            id: "ue21_2025",
-            ue: "UE21",
-            titre: "🥕UE21 - 24/25 - Session 1",
-            description: "25 questions",
-            sujet: "https://drive.google.com/file/d/1O6PH22tVLbMrnOeE-jX-sTkeU05fUt53/view?usp=drivesdk",
-            correction: "https://drive.google.com/file/d/1mhvECY_EvvqGAOFEGfH0H9zG3803siyA/view?usp=drivesdk",
-            qcm: [
-                { id: "QCM 1", reponse: ["B","C","E"] }, { id: "QCM 2", reponse: ["C","D"] }, { id: "QCM 3", reponse: ["B","C"] },
-                { id: "QCM 4", reponse: ["A","B","E"] }, { id: "QCM 5", reponse: ["B","D","E"] }, { id: "QCM 6", reponse: ["B","C"] },
-                { id: "QCM 7", reponse: ["D","E"] }, { id: "QCM 8", reponse: ["A","C","D","E"] }, { id: "QCM 9", reponse: ["B","E"] },
-                { id: "QCM 10", reponse: ["A","C","D","E"] }, { id: "QCM 11", reponse: ["A","B"] }, { id: "QCM 12", reponse: ["C","D"] },
-                { id: "QCM 13", reponse: ["A","C","D","E"] }, { id: "QCM 14", reponse: ["B","C","D"] }, { id: "QCM 15", reponse: ["B","C","D","E"] },
-                { id: "QCM 16", reponse: ["A","B"] }, { id: "QCM 17", reponse: ["A"] }, { id: "QCM 18", reponse: ["D"] },
-                { id: "QCM 19", reponse: ["B","D"] }, { id: "QCM 20", reponse: ["A","C","D"] }, { id: "QCM 21", reponse: ["C","D"] },
-                { id: "QCM 22", reponse: ["B","E"] }, { id: "QCM 23", reponse: ["A","B","C"] }, { id: "QCM 24", reponse: ["B","E"] },
-                { id: "QCM 25", reponse: ["A","B","C","E"] }
+                { id: "QCM 1", reponse: ["A", "C", "D"] },
+                { id: "QCM 2", reponse: ["B", "E"] },
+                { id: "QCM 3", reponse: ["A", "D", "E"] },
+                { id: "QCM 4", reponse: ["B", "C", "D"] },
+                { id: "QCM 5", reponse: ["A", "E"] },
+                { id: "QCM 6", reponse: ["C", "D", "E"] },
+                { id: "QCM 7", reponse: ["A", "B", "D"] },
+                { id: "QCM 8", reponse: ["C", "E"] },
+                { id: "QCM 9", reponse: ["B", "D", "E"] },
+                { id: "QCM 10", reponse: ["A", "C", "E"] }
             ]
         }
     ];
 
     // ============================================================
-    // 🏷️ GÉNÉRER LES ONGLETS
+    // 🏷️ FILTRES
     // ============================================================
-    let ueFiltre = "toutes";
+    let anneeFiltre = "toutes";
+    let typeFiltre = "tous";
 
-    function genererOnglets() {
-        const container = document.getElementById("ongletsContainer");
-        const ues = ["toutes", ...new Set(COLLES.map(colle => colle.ue))];
+    function genererOngletsAnnee() {
+        const container = document.getElementById("ongletsAnnee");
+        const annees = ["toutes", ...new Set(COLLES.map(c => c.annee))];
         let html = "";
-        ues.forEach(ue => {
-            let label = ue;
-            if (ue === "toutes") label = "📚 Toutes";
-            else if (UE_EMOJIS[ue]) label = `${UE_EMOJIS[ue]} ${ue}`;
-            const activeClass = ueFiltre === ue ? "active" : "";
-            html += `<div class="onglet ${activeClass}" data-ue="${ue}" onclick="filtrerParUE('${ue}')">${label}</div>`;
+        annees.forEach(annee => {
+            const label = annee === "toutes" ? "📅 Toutes" : annee;
+            const activeClass = anneeFiltre === annee ? "active" : "";
+            html += `<div class="onglet-annee ${activeClass}" data-annee="${annee}" onclick="filtrerParAnnee('${annee}')">${label}</div>`;
         });
         container.innerHTML = html;
     }
 
-    function filtrerParUE(ue) {
-        ueFiltre = ue;
-        genererOnglets();
-        afficherColles();
+    function genererSousOnglets() {
+        // Les sous-onglets sont déjà dans le HTML, on met juste à jour les classes actives
+        document.querySelectorAll(".onglet-type").forEach(el => {
+            el.classList.toggle("active", el.dataset.type === typeFiltre);
+        });
     }
 
+    function filtrerParAnnee(annee) {
+        anneeFiltre = annee;
+        genererOngletsAnnee();
+        afficherColles();
+        mettreAJourFiltresInfo();
+    }
+
+    function filtrerParType(type) {
+        typeFiltre = type;
+        genererSousOnglets();
+        afficherColles();
+        mettreAJourFiltresInfo();
+    }
+
+    function mettreAJourFiltresInfo() {
+        const container = document.getElementById("filtresInfo");
+        const anneeLabel = anneeFiltre === "toutes" ? "Toutes les années" : anneeFiltre;
+        const typeLabel = typeFiltre === "tous" ? "Tous les types" : TYPE_LABELS[typeFiltre] || typeFiltre;
+        container.textContent = `🔍 ${anneeLabel} · ${typeLabel}`;
+    }
+
+    // ============================================================
+    // 📋 AFFICHER LES COLLES
+    // ============================================================
     function afficherColles() {
         const container = document.getElementById("listeColles");
-        const collesFiltrees = ueFiltre === "toutes" ? COLLES : COLLES.filter(colle => colle.ue === ueFiltre);
-        if (collesFiltrees.length === 0) {
-            container.innerHTML = `<div class="empty-message">📭 Aucune colle disponible pour ${ueFiltre}</div>`;
+        
+        const filtrees = COLLES.filter(c => {
+            const matchAnnee = anneeFiltre === "toutes" || c.annee === anneeFiltre;
+            const matchType = typeFiltre === "tous" || c.type === typeFiltre;
+            return matchAnnee && matchType;
+        });
+
+        if (filtrees.length === 0) {
+            container.innerHTML = `<div class="empty-message">📭 Aucun QCM trouvé pour ces filtres</div>`;
             return;
         }
+
         let html = "";
-        collesFiltrees.forEach(colle => {
+        filtrees.forEach(colle => {
             const emoji = UE_EMOJIS[colle.ue] || "";
+            const typeBadge = TYPE_BADGE[colle.type] || "";
+            const typeLabel = TYPE_LABELS[colle.type] || colle.type;
+            
             html += `<div class="colle-item">
                 <div class="info">
                     <h3>${colle.titre}</h3>
@@ -1002,6 +823,8 @@
                     <div style="margin-top:5px;">
                         <span class="badge badge-qcm">${colle.qcm.length} questions</span>
                         <span class="badge badge-ue">${emoji} ${colle.ue}</span>
+                        <span class="badge ${typeBadge}">${typeLabel}</span>
+                        <span class="badge badge-secondary" style="background:#6c757d;color:white;">${colle.annee}</span>
                     </div>
                 </div>
                 <div class="actions">
@@ -1033,7 +856,7 @@
 
     function lancerQCM(id) {
         const colle = COLLES.find(c => c.id === id);
-        if (!colle) { alert("❌ Colle introuvable !"); return; }
+        if (!colle) { alert("❌ QCM introuvable !"); return; }
 
         questionsActuelles = colle.qcm;
         reponsesEleve = {};
@@ -1185,8 +1008,10 @@
     // 🚀 CHARGEMENT
     // ============================================================
     window.onload = function() {
-        genererOnglets();
+        genererOngletsAnnee();
+        genererSousOnglets();
         afficherColles();
+        mettreAJourFiltresInfo();
     };
 </script>
 
