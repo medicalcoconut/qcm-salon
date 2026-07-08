@@ -18,8 +18,8 @@
         .btn-correction { background: #ffc107; color: black; }
         .btn-correction:hover { background: #e0a800; }
         
-        /* Onglets principaux (Année) */
-        .onglets-principaux {
+        /* Onglets Année */
+        .onglets-annee {
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
@@ -39,14 +39,12 @@
         .onglet-annee.active { background: #007bff; color: white; border-color: #007bff; }
         .onglet-annee.active:hover { background: #0056b3; }
 
-        /* Sous-onglets (Type) */
-        .sous-onglets {
+        /* Sous-onglets Type */
+        .sous-onglets-type {
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
-            margin: 10px 0 20px 0;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #e9ecef;
+            margin: 10px 0 10px 0;
         }
         .onglet-type {
             padding: 8px 20px;
@@ -61,6 +59,29 @@
         .onglet-type:hover { background: #e9ecef; border-color: #adb5bd; }
         .onglet-type.active { background: #28a745; color: white; border-color: #28a745; }
         .onglet-type.active:hover { background: #1e7e34; }
+
+        /* Sous-sous-onglets UE */
+        .sous-onglets-ue {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 10px 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        .onglet-ue {
+            padding: 6px 15px;
+            border-radius: 12px;
+            border: 2px solid #dee2e6;
+            background: #f8f9fa;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+            transition: 0.3s;
+        }
+        .onglet-ue:hover { background: #e9ecef; border-color: #adb5bd; }
+        .onglet-ue.active { background: #fd7e14; color: white; border-color: #fd7e14; }
+        .onglet-ue.active:hover { background: #e06b0a; }
 
         .question { background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 4px solid #007bff; }
         .question label { display: inline-block; margin: 5px 8px 5px 0; cursor: pointer; padding: 10px 20px; border-radius: 8px; border: 2px solid #dee2e6; font-weight: bold; font-size: 18px; min-width: 50px; text-align: center; }
@@ -82,7 +103,7 @@
         .colle-item .actions { display: flex; gap: 10px; flex-wrap: wrap; }
         .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; }
         .badge-qcm { background: #e3f2fd; color: #007bff; }
-        .badge-ue { padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; background: #007bff; color: white; }
+        .badge-ue { padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; background: #fd7e14; color: white; }
         .badge-type { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
         .badge-annales { background: #ffc107; color: black; }
         .badge-colle { background: #17a2b8; color: white; }
@@ -94,7 +115,7 @@
         @media (max-width: 600px) { 
             .colle-item { flex-direction: column; text-align: center; } 
             .colle-item .actions { justify-content: center; }
-            .onglets-principaux, .sous-onglets { justify-content: center; }
+            .onglets-annee, .sous-onglets-type, .sous-onglets-ue { justify-content: center; }
         }
     </style>
 </head>
@@ -105,17 +126,22 @@
         <h1 style="text-align:center;">🩺 QCM d'entrainement</h1>
         <p style="text-align:center; color:#6c757d;">Télécharge le sujet, fais le QCM ou consulte la correction</p>
         
-        <!-- Onglets Année -->
-        <div class="onglets-principaux" id="ongletsAnnee">
+        <!-- ===== NIVEAU 1 : ONGLETS ANNÉE ===== -->
+        <div class="onglets-annee" id="ongletsAnnee">
             <div class="onglet-annee active" data-annee="toutes" onclick="filtrerParAnnee('toutes')">📅 Toutes</div>
         </div>
 
-        <!-- Sous-onglets Type -->
-        <div class="sous-onglets" id="sousOngletsType">
+        <!-- ===== NIVEAU 2 : ONGLETS TYPE ===== -->
+        <div class="sous-onglets-type" id="sousOngletsType">
             <div class="onglet-type active" data-type="tous" onclick="filtrerParType('tous')">📚 Tous</div>
             <div class="onglet-type" data-type="annales" onclick="filtrerParType('annales')">📝 Annales</div>
             <div class="onglet-type" data-type="colle" onclick="filtrerParType('colle')">📖 Colles</div>
             <div class="onglet-type" data-type="ed" onclick="filtrerParType('ed')">✏️ ED</div>
+        </div>
+
+        <!-- ===== NIVEAU 3 : ONGLETS UE ===== -->
+        <div class="sous-onglets-ue" id="sousOngletsUE">
+            <div class="onglet-ue active" data-ue="toutes" onclick="filtrerParUE('toutes')">🎯 Toutes</div>
         </div>
 
         <div id="filtresInfo" class="filtres-info"></div>
@@ -144,7 +170,7 @@
 
 <script>
     // ============================================================
-    // 🎨 CORRESPONDANCE UE → EMOJI
+    // 🎨 CORRESPONDANCES
     // ============================================================
     const UE_EMOJIS = {
         "UE5": "♟️",
@@ -167,7 +193,7 @@
     };
 
     // ============================================================
-    // 📦 TOUTES LES COLLES (avec année et type)
+    // 📦 TOUTES LES COLLES
     // ============================================================
     const COLLES = [
         // ============ UE5 - ANNALES ============
@@ -474,8 +500,26 @@
                 { id: "QCM 6", reponse: ["A", "B", "C"] }
             ]
         },
+        {
+            id: "ue5_ed_2022",
+            ue: "UE5",
+            annee: "21/22",
+            type: "ed",
+            titre: "♟️UE5 - 21/22 - ED",
+            description: "6 questions - ED",
+            sujet: "https://drive.google.com/file/d/1BS1kI3WFx_0GddrSMYZ8W_shR-gzJsBd/view?usp=drivesdk",
+            correction: "https://drive.google.com/file/d/184e23gPAtNSR-Vgz20M3zDIghqTCa2Jj/view?usp=drivesdk",
+            qcm: [
+                { id: "QCM 1", reponse: ["B", "C", "D"] },
+                { id: "QCM 2", reponse: ["A", "E"] },
+                { id: "QCM 3", reponse: ["C", "D"] },
+                { id: "QCM 4", reponse: ["A", "B", "E"] },
+                { id: "QCM 5", reponse: ["D", "E"] },
+                { id: "QCM 6", reponse: ["A", "C"] }
+            ]
+        },
 
-        // ============ UE8 ============
+        // ============ UE8 - ANNALES ============
         {
             id: "ue8_2021",
             ue: "UE8",
@@ -608,7 +652,7 @@
             ]
         },
 
-        // ============ UE11 ============
+        // ============ UE11 - ANNALES ============
         {
             id: "ue11_2021",
             ue: "UE11",
@@ -657,7 +701,7 @@
             ]
         },
 
-        // ============ UE16 ============
+        // ============ UE16 - ANNALES ============
         {
             id: "ue16_2021",
             ue: "UE16",
@@ -699,7 +743,7 @@
             ]
         },
 
-        // ============ UE21 ============
+        // ============ UE21 - ANNALES ============
         {
             id: "ue21_2021",
             ue: "UE21",
@@ -752,21 +796,37 @@
     // ============================================================
     let anneeFiltre = "toutes";
     let typeFiltre = "tous";
+    let ueFiltre = "toutes";
 
     function genererOngletsAnnee() {
         const container = document.getElementById("ongletsAnnee");
-        const annees = ["toutes", ...new Set(COLLES.map(c => c.annee))];
+        // On ajoute "NC" en premier si on veut le mettre en avant
+        const annees = ["toutes", "NC", ...new Set(COLLES.map(c => c.annee))];
+        // On enlève les doublons de "NC"
+        const anneesUniques = [...new Set(annees)];
         let html = "";
-        annees.forEach(annee => {
-            const label = annee === "toutes" ? "📅 Toutes" : annee;
+        anneesUniques.forEach(annee => {
+            const label = annee === "toutes" ? "📅 Toutes" : annee === "NC" ? "🇳🇨 NC" : annee;
             const activeClass = anneeFiltre === annee ? "active" : "";
             html += `<div class="onglet-annee ${activeClass}" data-annee="${annee}" onclick="filtrerParAnnee('${annee}')">${label}</div>`;
         });
         container.innerHTML = html;
     }
 
-    function genererSousOnglets() {
-        // Les sous-onglets sont déjà dans le HTML, on met juste à jour les classes actives
+    function genererOngletsUE() {
+        const container = document.getElementById("sousOngletsUE");
+        const ues = ["toutes", ...new Set(COLLES.map(c => c.ue))];
+        let html = "";
+        ues.forEach(ue => {
+            const emoji = UE_EMOJIS[ue] || "";
+            const label = ue === "toutes" ? "🎯 Toutes" : `${emoji} ${ue}`;
+            const activeClass = ueFiltre === ue ? "active" : "";
+            html += `<div class="onglet-ue ${activeClass}" data-ue="${ue}" onclick="filtrerParUE('${ue}')">${label}</div>`;
+        });
+        container.innerHTML = html;
+    }
+
+    function genererSousOngletsType() {
         document.querySelectorAll(".onglet-type").forEach(el => {
             el.classList.toggle("active", el.dataset.type === typeFiltre);
         });
@@ -781,16 +841,24 @@
 
     function filtrerParType(type) {
         typeFiltre = type;
-        genererSousOnglets();
+        genererSousOngletsType();
+        afficherColles();
+        mettreAJourFiltresInfo();
+    }
+
+    function filtrerParUE(ue) {
+        ueFiltre = ue;
+        genererOngletsUE();
         afficherColles();
         mettreAJourFiltresInfo();
     }
 
     function mettreAJourFiltresInfo() {
         const container = document.getElementById("filtresInfo");
-        const anneeLabel = anneeFiltre === "toutes" ? "Toutes les années" : anneeFiltre;
+        const anneeLabel = anneeFiltre === "toutes" ? "Toutes les années" : anneeFiltre === "NC" ? " Nouvelle-Calédonie" : anneeFiltre;
         const typeLabel = typeFiltre === "tous" ? "Tous les types" : TYPE_LABELS[typeFiltre] || typeFiltre;
-        container.textContent = `🔍 ${anneeLabel} · ${typeLabel}`;
+        const ueLabel = ueFiltre === "toutes" ? "Toutes les UE" : UE_EMOJIS[ueFiltre] + " " + ueFiltre;
+        container.textContent = `🔍 ${anneeLabel} · ${typeLabel} · ${ueLabel}`;
     }
 
     // ============================================================
@@ -802,7 +870,8 @@
         const filtrees = COLLES.filter(c => {
             const matchAnnee = anneeFiltre === "toutes" || c.annee === anneeFiltre;
             const matchType = typeFiltre === "tous" || c.type === typeFiltre;
-            return matchAnnee && matchType;
+            const matchUE = ueFiltre === "toutes" || c.ue === ueFiltre;
+            return matchAnnee && matchType && matchUE;
         });
 
         if (filtrees.length === 0) {
@@ -1009,7 +1078,8 @@
     // ============================================================
     window.onload = function() {
         genererOngletsAnnee();
-        genererSousOnglets();
+        genererOngletsUE();
+        genererSousOngletsType();
         afficherColles();
         mettreAJourFiltresInfo();
     };
